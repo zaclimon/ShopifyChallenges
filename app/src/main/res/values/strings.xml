@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Memory Game</string>
+    <string name="new_game">New Game</string>
+    <string name="dev_credits">Created by Isaac Pateau</string>
+</resources>
