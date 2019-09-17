@@ -6,4 +6,5 @@
     <color name="colorPrimaryText"></color>
     <color name="colorSecondaryText"></color>
     <color name="black">#000000</color>
+    <color name="white">#ffffff</color>
 </resources>
