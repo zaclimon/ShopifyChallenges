@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <include
+        android:id="@+id/panel_card_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        layout="@layout/game_card"/>
+
+    <include
+        android:id="@+id/panel_card_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/panel_card_1"
+        layout="@layout/game_card" />
+
+    <include
+        android:id="@+id/panel_card_3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/panel_card_2"
+        layout="@layout/game_card"/>
+
+    <include
+        android:id="@+id/panel_card_4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/panel_card_3"
+        layout="@layout/game_card"/>
+
+    <include
+        android:id="@+id/panel_card_5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/panel_card_4"
+        layout="@layout/game_card"/>
+
+    <include
+        android:id="@+id/panel_card_6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        app:layout_constraintTop_toBottomOf="@id/panel_card_1"
+        layout="@layout/game_card"/>
+
+    <include
+        android:id="@+id/panel_card_7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/panel_card_6"
+        app:layout_constraintTop_toBottomOf="@id/panel_card_2"
+        layout="@layout/game_card"/>
+
+    <include
+        android:id="@+id/panel_card_8"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/panel_card_7"
+        app:layout_constraintTop_toBottomOf="@id/panel_card_3"
+        layout="@layout/game_card"/>
+
+    <include
+        android:id="@+id/panel_card_9"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/panel_card_8"
+        app:layout_constraintTop_toBottomOf="@id/panel_card_4"
+        layout="@layout/game_card"/>
+
+    <include
+        android:id="@+id/panel_card_10"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/panel_card_9"
+        app:layout_constraintTop_toBottomOf="@id/panel_card_5"
+        layout="@layout/game_card"/>
+
+    <include
+        android:id="@+id/panel_card_11"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        app:layout_constraintTop_toBottomOf="@id/panel_card_6"
+        layout="@layout/game_card"/>
+
+    <include
+        android:id="@+id/panel_card_12"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/panel_card_11"
+        app:layout_constraintTop_toBottomOf="@id/panel_card_7"
+        layout="@layout/game_card"/>
+
+    <include
+        android:id="@+id/panel_card_13"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/panel_card_12"
+        app:layout_constraintTop_toBottomOf="@id/panel_card_8"
+        layout="@layout/game_card"/>
+
+    <include
+        android:id="@+id/panel_card_14"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/panel_card_13"
+        app:layout_constraintTop_toBottomOf="@id/panel_card_9"
+        layout="@layout/game_card"/>
+
+    <include
+        android:id="@+id/panel_card_15"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/panel_card_14"
+        app:layout_constraintTop_toBottomOf="@id/panel_card_10"
+        layout="@layout/game_card"/>
+
+    <include
+        android:id="@+id/panel_card_16"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        app:layout_constraintTop_toBottomOf="@id/panel_card_11"
+        layout="@layout/game_card"/>
+
+    <include
+        android:id="@+id/panel_card_17"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/panel_card_16"
+        app:layout_constraintTop_toBottomOf="@id/panel_card_12"
+        layout="@layout/game_card"/>
+
+    <include
+        android:id="@+id/panel_card_18"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/panel_card_17"
+        app:layout_constraintTop_toBottomOf="@id/panel_card_13"
+        layout="@layout/game_card"/>
+
+    <include
+        android:id="@+id/panel_card_19"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/panel_card_18"
+        app:layout_constraintTop_toBottomOf="@id/panel_card_14"
+        layout="@layout/game_card"/>
+
+    <include
+        android:id="@+id/panel_card_20"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/panel_card_19"
+        app:layout_constraintTop_toBottomOf="@id/panel_card_15"
+        layout="@layout/game_card"/>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
