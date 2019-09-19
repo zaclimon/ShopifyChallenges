@@ -1,6 +1,7 @@
 package com.example.memorygame.game
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -22,5 +23,22 @@ class GameActivity : AppCompatActivity() {
                 behavior.state = BottomSheetBehavior.STATE_COLLAPSED
             }
         }
+        initListeners()
+
+    }
+
+    private fun initListeners() {
+
+        val panel = findViewById<ConstraintLayout>(R.id.game_panel)
+        val gameCardsCount = panel.childCount
+        val gameCards = mutableListOf<View>()
+        for (i in 0 until gameCardsCount) {
+            gameCards.add(panel.getChildAt(i))
+        }
+
+        for (view in gameCards) {
+            view.setOnClickListener { Log.d("GameActivity", view.id.toString()) }
+        }
+
     }
 }
