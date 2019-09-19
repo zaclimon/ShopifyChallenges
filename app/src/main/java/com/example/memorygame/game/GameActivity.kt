@@ -6,7 +6,9 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.memorygame.R
+import com.example.memorygame.data.ProductList
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.squareup.moshi.Moshi
 
 class GameActivity : AppCompatActivity() {
 
@@ -24,21 +26,30 @@ class GameActivity : AppCompatActivity() {
             }
         }
         initListeners()
-
+        initProducts()
     }
 
     private fun initListeners() {
-
         val panel = findViewById<ConstraintLayout>(R.id.game_panel)
         val gameCardsCount = panel.childCount
-        val gameCards = mutableListOf<View>()
+        val gameCardViews = mutableListOf<View>()
         for (i in 0 until gameCardsCount) {
-            gameCards.add(panel.getChildAt(i))
+            gameCardViews.add(panel.getChildAt(i))
         }
 
-        for (view in gameCards) {
+        for (view in gameCardViews) {
             view.setOnClickListener { Log.d("GameActivity", view.id.toString()) }
         }
+    }
 
+    private fun initProducts() {
+        val jsonString = application.assets.open("products.json").bufferedReader().use {
+            it.readLine()
+        }
+
+        val moshi = Moshi.Builder().build()
+        val jsonAdapter = moshi.adapter<ProductList>(ProductList::class.java)
+        val products = (jsonAdapter.fromJson(jsonString) as ProductList).products
+        Log.d(localClassName, products.toString())
     }
 }
