@@ -52,7 +52,7 @@ class GameActivity : AppCompatActivity() {
         val cards = createCards(products, views)
 
         // If we were playing previously, reset the pair count
-        if (pairCount == MAX_PAIRS) {
+        if (pairCount > 0) {
             pairCount = 0
         }
 
