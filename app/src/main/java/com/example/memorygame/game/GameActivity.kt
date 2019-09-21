@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.bumptech.glide.Glide
@@ -160,6 +161,15 @@ class GameActivity : AppCompatActivity() {
                 flippedCards.forEach { it.view.setImageResource(R.drawable.ic_shopify) }
             }
             flippedCards.clear()
+
+            if (pairCount == MAX_PAIRS) {
+                // Show the dialog for notifying the user that he/she won the game
+                val builder = AlertDialog.Builder(this)
+                builder.setTitle(R.string.congratulations_dialog_title)
+                builder.setMessage(R.string.congratulations_dialog_text)
+                builder.setPositiveButton(R.string.yay_text) { dialog, _ -> dialog.dismiss() }
+                builder.show()
+            }
         }
     }
 }

@@ -1,9 +1,12 @@
 <resources>
     <string name="app_name">Memory Game</string>
     <string name="about">About</string>
+    <string name="congratulations_dialog_text">You just won the game! Pull the score tab to get some stats.</string>
+    <string name="congratulations_dialog_title">Congratulations! 🎉</string>
     <string name="dev_credits">Created by Isaac Pateau</string>
     <string name="new_game">New Game</string>
     <string name="regular_game">Regular Game</string>
     <string name="reset">Reset</string>
     <string name="score_text">Score: %1$d/%2$d</string>
+    <string name="yay_text">Yay!</string>
 </resources>
