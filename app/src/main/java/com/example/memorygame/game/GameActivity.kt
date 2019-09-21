@@ -80,7 +80,7 @@ class GameActivity : AppCompatActivity() {
         val moshi = Moshi.Builder().build()
         val jsonAdapter = moshi.adapter<ProductList>(ProductList::class.java)
         val products = (jsonAdapter.fromJson(jsonString) as ProductList).products
-        return products.take(10)
+        return products.shuffled().take(10)
     }
 
     /**
@@ -114,7 +114,7 @@ class GameActivity : AppCompatActivity() {
         products.forEach {
             cardsList.addAll(listOf(Card(it, viewsLinkedList.pop()), Card(it, viewsLinkedList.pop())))
         }
-        return cardsList
+        return cardsList.shuffled()
     }
 
     /**
