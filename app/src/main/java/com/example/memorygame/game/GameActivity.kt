@@ -62,12 +62,6 @@ class GameActivity : AppCompatActivity() {
             gameCardViews.add(cardLayout.getChildAt(0) as ImageView)
         }
 
-        for (view in gameCardViews) {
-            flippedCards
-            view.setOnClickListener {
-                Log.d("GameActivity", view.id.toString())
-            }
-        }
         return gameCardViews
     }
 
@@ -83,6 +77,7 @@ class GameActivity : AppCompatActivity() {
           though this is the only way I have found. Another solution could be to add the products
           based on it's modulo position so we could avoid "replicating" the card instantiation.
         */
+
         products.forEach {
             cardsList.addAll(listOf(Card(it, viewsLinkedList.pop()), Card(it, viewsLinkedList.pop())))
         }
