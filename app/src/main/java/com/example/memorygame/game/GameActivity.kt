@@ -14,10 +14,12 @@ import com.example.memorygame.data.Product
 import com.example.memorygame.data.ProductList
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.squareup.moshi.Moshi
+import kotlinx.android.synthetic.main.bottom_sheet.*
 import java.util.*
 
 class GameActivity : AppCompatActivity() {
 
+    private val MAX_PAIRS: Int = 10
     private var pairCount: Int = 0
     private var flippedCards: MutableList<Card> = mutableListOf()
 
@@ -69,6 +71,9 @@ class GameActivity : AppCompatActivity() {
         return gameCardViews
     }
 
+    /**
+     * Creates the cards based on the products received from Shopify's JSON file.
+     */
     private fun createCards(products: List<Product>, views: List<ImageView>): List<Card> {
         val cardsList = mutableListOf<Card>()
         val viewsLinkedList = LinkedList<ImageView>(views)
@@ -84,20 +89,50 @@ class GameActivity : AppCompatActivity() {
         return cardsList
     }
 
+    /**
+     * Initializes listeners when touching on the cards.
+     */
     private fun initListeners(cards: List<Card>) {
         for (card in cards) {
             card.view.setOnClickListener {
-                pairCount++
+
+                /*
+                 Every time we press on a card we "flip" it by doing the following:
+
+                 1. We add the card to the list of currently checked cards
+                 2. We replace the image for this card, thus "flipping" it
+                 3. We verify to see if the cards are the same
+                 */
+
                 flippedCards.add(card)
                 Glide.with(this).load(card.product.image.src).into(card.view)
-                //verifyCards()
+                verifyCards()
             }
         }
     }
 
+    /**
+     * Verifies flipped cards to ensure that they are the same,
+     *
+     * If this is not the case, then they are being flipped back to their "back".
+     */
     private fun verifyCards() {
+        // Do nothing unless we have two flipped cards
         if (flippedCards.size == 2) {
-            val isSame = flippedCards.all { card -> card.product.id == card.product.id }
+
+            /*
+             * When we are sure that we have the same cards, be sure to not consider them anymore by
+             * removing their listeners. Also notify the user that we got a new pair! 🎉
+             */
+
+            if (flippedCards[0].product.id == flippedCards[1].product.id) {
+                pairCount++
+                flippedCards.forEach { it.view.setOnClickListener(null) }
+                textview_score.text = getString(R.string.score_text, pairCount, MAX_PAIRS)
+            } else {
+                // Set the card back to the Shopify logo when we don't have a good fit
+                flippedCards.forEach { it.view.setImageDrawable(getDrawable(R.drawable.ic_shopify)) }
+            }
             flippedCards.clear()
         }
     }
