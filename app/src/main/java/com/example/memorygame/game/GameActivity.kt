@@ -4,8 +4,10 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
+import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import com.bumptech.glide.Glide
 import com.example.memorygame.R
 import com.example.memorygame.data.Card
 import com.example.memorygame.data.Product
@@ -54,7 +56,8 @@ class GameActivity : AppCompatActivity() {
         val gameCardsCount = panel.childCount
         val gameCardViews = mutableListOf<ImageView>()
         for (i in 0 until gameCardsCount) {
-            gameCardViews.add(panel.getChildAt(i) as ImageView)
+            val cardLayout = panel.getChildAt(i) as LinearLayout
+            gameCardViews.add(cardLayout.getChildAt(0) as ImageView)
         }
 
         for (view in gameCardViews) {
@@ -86,7 +89,8 @@ class GameActivity : AppCompatActivity() {
             card.view.setOnClickListener {
                 pairCount++
                 flippedCards.add(card)
-                verifyCards()
+                Glide.with(this).load(card.product.image.src).into(card.view)
+                //verifyCards()
             }
         }
     }
