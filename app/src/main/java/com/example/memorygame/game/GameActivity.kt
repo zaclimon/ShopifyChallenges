@@ -1,7 +1,6 @@
 package com.example.memorygame.game
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -36,12 +35,42 @@ class GameActivity : AppCompatActivity() {
                 behavior.state = BottomSheetBehavior.STATE_COLLAPSED
             }
         }
+
+        reset_button.setOnClickListener { initGame() }
+        initGame()
+    }
+
+    /**
+     * Initializes/Resets everything for a new game
+     */
+    private fun initGame() {
+
+        // Get all products, ImageViews and generate cards based on them
         val products = getGameProducts()
         val views = getGameCardViews()
         val cards = createCards(products, views)
-        initListeners(cards)
+
+        // If we were playing previously, reset the pair count
+        if (pairCount == MAX_PAIRS) {
+            pairCount = 0
+        }
+
+        // Return all the flipped cards as their "back" side
+        for (view in views) {
+            view.setImageResource(R.drawable.ic_shopify)
+        }
+
+        // Initialize the listeners when pressing on a card
+        initCardListeners(cards)
+
+        // Set the score
+        textview_score.text = getString(R.string.score_text, pairCount, MAX_PAIRS)
+
     }
 
+    /**
+     * Retrieves a list of products based on the JSON file given for the challenge
+     */
     private fun getGameProducts(): List<Product> {
         val jsonString = application.assets.open("products.json").bufferedReader().use {
             it.readLine()
@@ -53,6 +82,9 @@ class GameActivity : AppCompatActivity() {
         return products.take(10)
     }
 
+    /**
+     * Gets all the views which will be our cards
+     */
     private fun getGameCardViews(): List<ImageView> {
         val panel = findViewById<ConstraintLayout>(R.id.game_panel)
         val gameCardsCount = panel.childCount
@@ -87,7 +119,7 @@ class GameActivity : AppCompatActivity() {
     /**
      * Initializes listeners when touching on the cards.
      */
-    private fun initListeners(cards: List<Card>) {
+    private fun initCardListeners(cards: List<Card>) {
         for (card in cards) {
             card.view.setOnClickListener {
 
@@ -107,9 +139,8 @@ class GameActivity : AppCompatActivity() {
     }
 
     /**
-     * Verifies flipped cards to ensure that they are the same,
-     *
-     * If this is not the case, then they are being flipped back to their "back".
+     * Verifies flipped cards to ensure that they are the same. If this is not the case,
+     * then they are being flipped to their "back" side.
      */
     private fun verifyCards() {
         // Do nothing unless we have two flipped cards
@@ -126,7 +157,7 @@ class GameActivity : AppCompatActivity() {
                 textview_score.text = getString(R.string.score_text, pairCount, MAX_PAIRS)
             } else {
                 // Set the card back to the Shopify logo when we don't have a good fit
-                flippedCards.forEach { it.view.setImageDrawable(getDrawable(R.drawable.ic_shopify)) }
+                flippedCards.forEach { it.view.setImageResource(R.drawable.ic_shopify) }
             }
             flippedCards.clear()
         }
