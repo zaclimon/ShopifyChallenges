@@ -1,6 +1,7 @@
 package com.example.memorygame.game
 
 import android.os.Bundle
+import android.os.Handler
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -21,6 +22,7 @@ class GameActivity : AppCompatActivity() {
     private val MAX_PAIRS: Int = 10
     private var pairCount: Int = 0
     private var flippedCards: MutableList<Card> = mutableListOf()
+    private var isCardClickable: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -116,14 +118,19 @@ class GameActivity : AppCompatActivity() {
                  1. We add the card to the list of currently checked cards
                  2. We replace the image for this card, thus "flipping" it
                  3. We verify to see if the cards are the same
+
+                 We don't want a player spamming all the cards during a pair check so only verify
+                 them if they can be clicked
                  */
 
-                flippedCards.add(card)
-                Glide.with(this)
-                    .load(card.product.image.src)
-                    .onlyRetrieveFromCache(true)
-                    .into(card.view)
-                verifyCards()
+                if (isCardClickable) {
+                    flippedCards.add(card)
+                    Glide.with(this)
+                        .load(card.product.image.src)
+                        .onlyRetrieveFromCache(true)
+                        .into(card.view)
+                    verifyCards()
+                }
             }
         }
     }
@@ -145,12 +152,32 @@ class GameActivity : AppCompatActivity() {
                 pairCount++
                 flippedCards.forEach { it.view.setOnClickListener(null) }
                 textview_score.text = getString(R.string.score_text, pairCount, MAX_PAIRS)
+                flippedCards.clear()
             } else {
-                // Set the card back to the Shopify logo when we don't have a good fit
-                flippedCards.forEach { it.view.setImageResource(R.drawable.ic_shopify) }
-            }
 
-            flippedCards.clear()
+                /*
+                  Add a slight delay before flipping back the cards for two reasons:
+
+                  1. Let enough time for the user to see actually what was the second card so he/she
+                     selected so he/she can memorize it for his/her next step.
+                  2. For images that Glide loads for the first time, it might load the product
+                     image into the ImageView after we revert to Shopify's one.
+
+                  Since we are flipping after a certain period, there's a race condition happening so
+                  we explicitly need to clear the list for both conditions of the if statement.
+                 */
+
+                // Disable the ability for players to press other not found pairs to avoid spamming.
+                isCardClickable = false
+
+                Handler().postDelayed({
+                    // Set the card back to the Shopify logo when we don't have a good fit
+                    flippedCards.forEach { it.view.setImageResource(R.drawable.ic_shopify) }
+                    flippedCards.clear()
+                    isCardClickable = true
+                }, 500)
+
+            }
 
             if (pairCount == MAX_PAIRS) {
                 // Show the dialog for notifying the user that he/she won the game
