@@ -79,7 +79,7 @@ class GameActivity : AppCompatActivity() {
      */
     private fun createCards(products: List<Product>, views: List<ImageView>): List<Card> {
         val cardsList = mutableListOf<Card>()
-        val viewsLinkedList = LinkedList<ImageView>(views)
+        val viewsLinkedList = LinkedList(views.shuffled())
 
         /*
           There should definitely be a better way of assigning two ImageViews for the same Product
@@ -90,7 +90,7 @@ class GameActivity : AppCompatActivity() {
         products.forEach {
             cardsList.addAll(listOf(Card(it, viewsLinkedList.pop()), Card(it, viewsLinkedList.pop())))
         }
-        return cardsList.shuffled()
+        return cardsList
     }
 
     /**
