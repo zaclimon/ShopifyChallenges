@@ -19,6 +19,11 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 
+/**
+ * Activity representing the home screen of the application
+ *
+ * @author Isaac Pateau
+ */
 class MainActivity : AppCompatActivity(), JsonDownloaderListener, ImageDownloaderListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {

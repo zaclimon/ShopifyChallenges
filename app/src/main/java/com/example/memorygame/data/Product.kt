@@ -10,7 +10,11 @@ import okhttp3.*
 import java.io.File
 import java.io.IOException
 
-
+/**
+ * Holder class representing a product. Uses Moshi to process the data.
+ *
+ * @author Isaac Pateau
+ */
 @JsonClass(generateAdapter = true)
 data class Product(
     val id: Long,
@@ -19,11 +23,22 @@ data class Product(
     val image: ProductImage
 )
 
+/**
+ * Holder class used to hold a list of multiple products. Uses Moshi to process the data.
+ *
+ * @author Isaac Pateau
+ */
 @JsonClass(generateAdapter = true)
 data class ProductList(
     val products: List<Product>
 )
 
+/**
+ * Holder class used to represent an image JSON inside the product JSON object. Uses Moshi to process
+ * the data.
+ *
+ * @author Isaac Pateau
+ */
 @JsonClass(generateAdapter = true)
 data class ProductImage(
     val id: Long,
@@ -51,7 +66,7 @@ class ProductUtils {
             }
 
             val moshi = Moshi.Builder().build()
-            val jsonAdapter = moshi.adapter<ProductList>(ProductList::class.java)
+            val jsonAdapter = moshi.adapter(ProductList::class.java)
             return (jsonAdapter.fromJson(jsonString) as ProductList).products
         }
 
@@ -101,7 +116,7 @@ class ProductUtils {
               This is NOT the best way of handling this mainly because we assume that:
 
               1. The device has reliable internet connection. (Which might be true in a sandbox like
-              emulator but not with a real device)
+              the emulator but not with a real device)
               2. That Shopify's CDN is always available to retrieve the images.
 
               Also, for the sake of simplicity, a listener for asynchronous based Glide requests has

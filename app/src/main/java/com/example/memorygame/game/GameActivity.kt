@@ -15,6 +15,13 @@ import com.example.memorygame.data.ProductUtils
 import kotlinx.android.synthetic.main.score_section.*
 import java.util.*
 
+/**
+ * Represents the screen for an actual game alongside it's logic. Ideally, we would want to separate
+ * the logic from the Activity itself to reduce coupling, though since the logic is not too big, it
+ * is reasonable to let it here.
+ *
+ * @author Isaac Pateau
+ */
 class GameActivity : AppCompatActivity() {
 
     private val MAX_PAIRS: Int = 10
@@ -108,7 +115,7 @@ class GameActivity : AppCompatActivity() {
                  3. We verify to see if the cards are the same
 
                  We don't want a player spamming all the cards during a pair check so only verify
-                 them if they can be clicked
+                 them if they can be clicked.
                  */
 
                 if (isCardClickable) {
