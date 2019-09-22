@@ -2,7 +2,6 @@ package com.example.memorygame.game
 
 import android.os.Bundle
 import android.os.Handler
-import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
@@ -13,7 +12,6 @@ import com.example.memorygame.R
 import com.example.memorygame.data.Card
 import com.example.memorygame.data.Product
 import com.example.memorygame.data.ProductUtils
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.android.synthetic.main.score_section.*
 import java.util.*
 
@@ -49,7 +47,7 @@ class GameActivity : AppCompatActivity() {
 
         // Return all the flipped cards as their "back" side
         for (view in views) {
-            view.setImageResource(R.drawable.ic_shopify)
+            view.setImageResource(R.drawable.ic_shopify_glyph)
         }
 
         // Initialize the listeners when pressing on a card
@@ -162,7 +160,7 @@ class GameActivity : AppCompatActivity() {
 
                 Handler().postDelayed({
                     // Set the card back to the Shopify logo when we don't have a good fit
-                    flippedCards.forEach { it.view.setImageResource(R.drawable.ic_shopify) }
+                    flippedCards.forEach { it.view.setImageResource(R.drawable.ic_shopify_glyph) }
                     flippedCards.clear()
                     isCardClickable = true
                 }, 500)

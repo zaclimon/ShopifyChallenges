@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Memory Game</string>
-    <string name="about">About</string>
+    <string name="about_text">About</string>
+    <string name="about_dialog_text">Version: %s\nMade by: Isaac Pateau</string>
     <string name="cancel_text">Cancel</string>
     <string name="congratulations_dialog_text">You just won the game! Pull the score tab to get some stats.</string>
     <string name="congratulations_dialog_title">Congratulations! 🎉</string>
@@ -13,6 +14,7 @@
     <string name="exit_dialog_text">You will lose all your progress if you exit now!</string>
     <string name="new_game">New Game</string>
     <string name="ok_text">OK</string>
+    <string name="realized_for_text">A project realized for:</string>
     <string name="regular_game">Regular Game</string>
     <string name="reset">Reset</string>
     <string name="score_text">Score: %1$d/%2$d</string>

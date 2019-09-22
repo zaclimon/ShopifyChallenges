@@ -8,6 +8,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.FrameLayout
+import androidx.appcompat.app.AlertDialog
+import com.example.memorygame.BuildConfig
 import com.example.memorygame.R
 import com.example.memorygame.data.ProductUtils
 import com.example.memorygame.game.GameActivity
@@ -26,6 +28,13 @@ class MainActivity : AppCompatActivity(), JsonDownloaderListener, ImageDownloade
         button_new_game.setOnClickListener {
             val intent = Intent(this, GameActivity()::class.java)
             startActivity(intent)
+        }
+
+        button_about.setOnClickListener {
+            AlertDialog.Builder(this)
+                .setTitle(R.string.about_text)
+                .setMessage(getString(R.string.about_dialog_text, BuildConfig.VERSION_NAME))
+                .show()
         }
 
         // Check if products.json is present so we can download the assets if necessary
