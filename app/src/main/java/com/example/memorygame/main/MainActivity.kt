@@ -1,9 +1,10 @@
-package com.example.memorygame
+package com.example.memorygame.main
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
+import com.example.memorygame.R
 import com.example.memorygame.game.GameActivity
 
 class MainActivity : AppCompatActivity() {
