@@ -27,7 +27,7 @@ class GameActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
 
-        val bottomSheet = findViewById<ConstraintLayout>(R.id.score_results_bottom_sheet)
+        val bottomSheet = findViewById<ConstraintLayout>(R.id.game_bottom_sheet)
         val behavior = BottomSheetBehavior.from(bottomSheet)
         behavior.bottomSheetCallback = object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
