@@ -1,4 +1,4 @@
-package com.example.memorygame.game
+package com.zaclimon.memorygame.game
 
 import android.os.Bundle
 import android.os.Handler
@@ -8,10 +8,10 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.bumptech.glide.Glide
-import com.example.memorygame.R
-import com.example.memorygame.data.Card
-import com.example.memorygame.data.Product
-import com.example.memorygame.data.ProductUtils
+import com.zaclimon.memorygame.R
+import com.zaclimon.memorygame.data.Card
+import com.zaclimon.memorygame.data.Product
+import com.zaclimon.memorygame.data.ProductUtils
 import kotlinx.android.synthetic.main.score_section.*
 import java.util.*
 
@@ -64,7 +64,6 @@ class GameActivity : AppCompatActivity() {
         textview_score.text = getString(R.string.score_text, pairCount, MAX_PAIRS)
 
     }
-
 
     /**
      * Gets all the views which will be our cards

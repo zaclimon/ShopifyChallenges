@@ -1,11 +1,11 @@
-package com.example.memorygame.data
+package com.zaclimon.memorygame.data
 
 import android.content.Context
 import com.bumptech.glide.Glide
-import com.example.memorygame.listeners.ImageDownloaderListener
-import com.example.memorygame.listeners.JsonDownloaderListener
 import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Moshi
+import com.zaclimon.memorygame.listeners.ImageDownloaderListener
+import com.zaclimon.memorygame.listeners.JsonDownloaderListener
 import okhttp3.*
 import java.io.File
 import java.io.IOException
@@ -138,5 +138,4 @@ class ProductUtils {
             listener.onImagesDownloadSuccess()
         }
     }
-
 }

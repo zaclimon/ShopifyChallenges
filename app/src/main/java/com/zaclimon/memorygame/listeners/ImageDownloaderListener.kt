@@ -1,4 +1,4 @@
-package com.example.memorygame.listeners
+package com.zaclimon.memorygame.listeners
 
 /**
  * Interface responsible for listening to events happening during the download process of a Product

@@ -1,4 +1,4 @@
-package com.example.memorygame.data
+package com.zaclimon.memorygame.data
 
 import android.widget.ImageView
 

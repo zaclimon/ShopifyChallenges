@@ -1,21 +1,20 @@
-package com.example.memorygame.main
+package com.zaclimon.memorygame.main
 
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.View
 import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
-import com.example.memorygame.BuildConfig
-import com.example.memorygame.R
-import com.example.memorygame.data.ProductUtils
-import com.example.memorygame.game.GameActivity
-import com.example.memorygame.listeners.ImageDownloaderListener
-import com.example.memorygame.listeners.JsonDownloaderListener
+import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
+import com.zaclimon.memorygame.BuildConfig
+import com.zaclimon.memorygame.R
+import com.zaclimon.memorygame.data.ProductUtils
+import com.zaclimon.memorygame.game.GameActivity
+import com.zaclimon.memorygame.listeners.ImageDownloaderListener
+import com.zaclimon.memorygame.listeners.JsonDownloaderListener
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 
@@ -74,7 +73,7 @@ class MainActivity : AppCompatActivity(), JsonDownloaderListener, ImageDownloade
     override fun onImagesDownloadSuccess() {
 
         /*
-          One of the hiccups of running asynchrounous tasks without knowing exactly when all images
+          One of the hiccups of running asynchronous tasks without knowing exactly when all images
           will appear is that modifying some UI elements might not be possible because we were
           running on a background thread. "Force" this by explicitly running on the UI thread.
          */
@@ -83,7 +82,6 @@ class MainActivity : AppCompatActivity(), JsonDownloaderListener, ImageDownloade
             button_new_game.isEnabled = true
             Snackbar.make(rootView, getString(R.string.download_assets_success), Snackbar.LENGTH_SHORT).show()
         }
-
     }
 
     /**
