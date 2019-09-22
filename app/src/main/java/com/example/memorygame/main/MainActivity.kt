@@ -1,10 +1,13 @@
 package com.example.memorygame.main
 
+import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import android.widget.FrameLayout
-import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.memorygame.R
 import com.example.memorygame.data.ProductUtils
 import com.example.memorygame.game.GameActivity
@@ -30,23 +33,58 @@ class MainActivity : AppCompatActivity(), JsonDownloaderListener, ImageDownloade
 
         if (!productFile.isFile) {
             val rootView = findViewById<FrameLayout>(android.R.id.content)
-            Snackbar.make(rootView, "Downloading assets for first time use", Snackbar.LENGTH_SHORT).show()
-            ProductUtils.saveProductJson(this, this)
+            button_new_game.isEnabled = false
+
+            // Verify if the network is available before letting the user start a new game
+            if (isNetworkAvailable()) {
+                Snackbar.make(rootView, getString(R.string.download_assets), Snackbar.LENGTH_SHORT).show()
+                ProductUtils.saveProductJson(this, this)
+            } else {
+                Snackbar.make(rootView, getString(R.string.verify_internet_connection), Snackbar.LENGTH_INDEFINITE)
+                    .setAction(R.string.dismiss_text) {}
+                    .show()
+            }
         }
     }
 
     override fun onJsonDownloadSuccess() {
-        // Download images when we have the products definition
+        // Download images when we have the product definitions
         ProductUtils.saveProductImages(this, this)
     }
 
     override fun onJsonDownloadFailed() {
         val rootView = findViewById<FrameLayout>(android.R.id.content)
-        Snackbar.make(rootView, "Download failed!", Snackbar.LENGTH_SHORT).show()
+        Snackbar.make(rootView, getString(R.string.download_assets_failure), Snackbar.LENGTH_SHORT).show()
     }
 
     override fun onImagesDownloadSuccess() {
-        val rootView = findViewById<FrameLayout>(android.R.id.content)
-        Snackbar.make(rootView, "Assets downloaded!", Snackbar.LENGTH_SHORT).show()
+
+        /*
+          One of the hiccups of running asynchrounous tasks without knowing exactly when all images
+          will appear is that modifying some UI elements might not be possible because we were
+          running on a background thread. "Force" this by explicitly running on the UI thread.
+         */
+        runOnUiThread {
+            val rootView = findViewById<FrameLayout>(android.R.id.content)
+            button_new_game.isEnabled = true
+            Snackbar.make(rootView, getString(R.string.download_assets_success), Snackbar.LENGTH_SHORT).show()
+        }
+
+    }
+
+    /**
+     * Verifies if the network is able to access internet so it is possible to download the required
+     * assets
+     */
+    private fun isNetworkAvailable(): Boolean {
+
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkCapabilities = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+
+        if (networkCapabilities != null) {
+            return networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        }
+
+        return false
     }
 }
