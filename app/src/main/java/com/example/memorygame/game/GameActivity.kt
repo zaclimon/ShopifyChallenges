@@ -179,12 +179,17 @@ class GameActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        // Show a dialog which might indicate if the user wants to quit a game
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle(R.string.exit_dialog_title)
-        builder.setMessage(R.string.exit_dialog_text)
-        builder.setPositiveButton(R.string.ok_text) { _, _ -> finish() }
-        builder.setNegativeButton(R.string.cancel_text) { dialog, _ -> dialog.dismiss() }
-        builder.show()
+        if (pairCount < MAX_PAIRS) {
+            // Show a dialog which might indicate if the user wants to quit a game
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle(R.string.exit_dialog_title)
+            builder.setMessage(R.string.exit_dialog_text)
+            builder.setPositiveButton(R.string.ok_text) { _, _ -> finish() }
+            builder.setNegativeButton(R.string.cancel_text) { dialog, _ -> dialog.dismiss() }
+            builder.show()
+        } else {
+            // Otherwise, let's go back to the home menu!
+            super.onBackPressed()
+        }
     }
 }
