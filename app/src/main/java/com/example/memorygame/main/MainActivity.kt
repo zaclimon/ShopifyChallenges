@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.widget.Button
 import com.example.memorygame.R
 import com.example.memorygame.game.GameActivity
+import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -13,8 +14,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val newGameButton = findViewById<Button>(R.id.button_new_game)
-        newGameButton.setOnClickListener {
+        button_new_game.setOnClickListener {
             val intent = Intent(this, GameActivity()::class.java)
             startActivity(intent)
         }
