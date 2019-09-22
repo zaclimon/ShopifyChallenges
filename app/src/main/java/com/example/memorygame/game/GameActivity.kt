@@ -11,9 +11,8 @@ import com.bumptech.glide.Glide
 import com.example.memorygame.R
 import com.example.memorygame.data.Card
 import com.example.memorygame.data.Product
-import com.example.memorygame.data.ProductList
+import com.example.memorygame.data.ProductUtils
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.squareup.moshi.Moshi
 import kotlinx.android.synthetic.main.bottom_sheet.*
 import java.util.*
 
@@ -47,7 +46,7 @@ class GameActivity : AppCompatActivity() {
     private fun initGame() {
 
         // Get all products, ImageViews and generate cards based on them
-        val products = getGameProducts()
+        val products = ProductUtils.retrieveProducts(this).shuffled().take(MAX_PAIRS)
         val views = getGameCardViews()
         val cards = createCards(products, views)
 
@@ -69,19 +68,6 @@ class GameActivity : AppCompatActivity() {
 
     }
 
-    /**
-     * Retrieves a list of products based on the JSON file given for the challenge
-     */
-    private fun getGameProducts(): List<Product> {
-        val jsonString = application.assets.open("products.json").bufferedReader().use {
-            it.readLine()
-        }
-
-        val moshi = Moshi.Builder().build()
-        val jsonAdapter = moshi.adapter<ProductList>(ProductList::class.java)
-        val products = (jsonAdapter.fromJson(jsonString) as ProductList).products
-        return products.shuffled().take(10)
-    }
 
     /**
      * Gets all the views which will be our cards
@@ -133,7 +119,10 @@ class GameActivity : AppCompatActivity() {
                  */
 
                 flippedCards.add(card)
-                Glide.with(this).load(card.product.image.src).into(card.view)
+                Glide.with(this)
+                    .load(card.product.image.src)
+                    .onlyRetrieveFromCache(true)
+                    .into(card.view)
                 verifyCards()
             }
         }
@@ -160,6 +149,7 @@ class GameActivity : AppCompatActivity() {
                 // Set the card back to the Shopify logo when we don't have a good fit
                 flippedCards.forEach { it.view.setImageResource(R.drawable.ic_shopify) }
             }
+
             flippedCards.clear()
 
             if (pairCount == MAX_PAIRS) {
