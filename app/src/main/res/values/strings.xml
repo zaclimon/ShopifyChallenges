@@ -3,7 +3,7 @@
     <string name="about_text">About</string>
     <string name="about_dialog_text">Version: %s\nMade by: Isaac Pateau</string>
     <string name="cancel_text">Cancel</string>
-    <string name="congratulations_dialog_text">You just won the game! Pull the score tab to get some stats.</string>
+    <string name="congratulations_dialog_text">You just won the game! Hope you enjoyed it! 🙂</string>
     <string name="congratulations_dialog_title">Congratulations! 🎉</string>
     <string name="dev_credits">Created by Isaac Pateau</string>
     <string name="dismiss_text">Dismiss</string>
