@@ -14,7 +14,7 @@ import com.example.memorygame.data.Card
 import com.example.memorygame.data.Product
 import com.example.memorygame.data.ProductUtils
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import kotlinx.android.synthetic.main.bottom_sheet.*
+import kotlinx.android.synthetic.main.score_section.*
 import java.util.*
 
 class GameActivity : AppCompatActivity() {
@@ -27,16 +27,6 @@ class GameActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
-
-        val bottomSheet = findViewById<ConstraintLayout>(R.id.game_bottom_sheet)
-        val behavior = BottomSheetBehavior.from(bottomSheet)
-        behavior.bottomSheetCallback = object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(bottomSheet: View, newState: Int) {
-            }
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                behavior.state = BottomSheetBehavior.STATE_COLLAPSED
-            }
-        }
 
         reset_button.setOnClickListener { initGame() }
         initGame()

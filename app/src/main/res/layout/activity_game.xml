@@ -42,10 +42,13 @@
         android:layout_width="match_parent"
         android:layout_height="16dp"
         android:background="@drawable/shadow"
-        app:layout_anchor="@id/game_bottom_sheet" />
+        app:layout_anchor="@id/game_score_section" />
 
     <include
-        android:id="@+id/game_bottom_sheet"
-        layout="@layout/bottom_sheet"/>
+        android:id="@+id/game_score_section"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        layout="@layout/score_section"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
