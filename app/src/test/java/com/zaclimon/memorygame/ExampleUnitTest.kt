@@ -1,4 +1,4 @@
-package com.example.memorygame
+package com.zaclimon.memorygame
 
 import org.junit.Test
 
