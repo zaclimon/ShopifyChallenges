@@ -23,7 +23,7 @@ def register():
         elif User.query.filter_by(email=form_email).first() is not None:
             error = "The email {} is already registered!".format(form_email)
         else:
-            # Encode the password so it can be readable.
+            # Encode the password so it can be easier to store in the DB.
             # See: https://github.com/maxcountryman/flask-bcrypt/issues/38#issuecomment-247513357
             hashed_password = flask_bcrypt.generate_password_hash(form_password).decode('utf-8')
             new_user = User(email=form_email, password=hashed_password)
