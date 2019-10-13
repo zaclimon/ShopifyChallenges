@@ -4,7 +4,6 @@ db = SQLAlchemy()
 
 # Initialize the database
 def init_app(app):
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres@localhost'
     db.init_app(app)
 
     with app.app_context():
