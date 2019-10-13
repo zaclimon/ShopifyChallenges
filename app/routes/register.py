@@ -1,7 +1,8 @@
-from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
+from flask import Blueprint, request, jsonify
+from app import flask_bcrypt
+from app.schemas.userschema import UserSchema
 from app.models import db
 from app.models.user import User
-from app import flask_bcrypt
 
 register_bp = Blueprint("register", __name__)
 
@@ -13,7 +14,7 @@ def register():
         # Inspired from: https://flask.palletsprojects.com/en/1.1.x/tutorial/views/#the-first-view-register
         form_email = request.form["email"]
         form_password = request.form["password"]
-        error = None
+        user_schema = UserSchema()
 
         if not form_email:
             error = "An email is required"
@@ -28,6 +29,9 @@ def register():
             new_user = User(email=form_email, password=hashed_password)
             db.session.add(new_user)
             db.session.commit()
-            return "Account for {} has been created".format(form_email)
+            return user_schema.dump(new_user)
+
+        error_data = {"error": error}
+        return jsonify(error_data)
     else:
         return "Hi! 👋"
