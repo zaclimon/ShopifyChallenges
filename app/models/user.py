@@ -1,4 +1,5 @@
 from . import db
+import datetime
 
 
 class User(db.Model):
@@ -10,4 +11,5 @@ class User(db.Model):
     email = db.Column(db.String(254), unique=True)
     # See: https://security.stackexchange.com/a/39851
     password = db.Column(db.String(72))
+    date_created = db.Column(db.DateTime, default=datetime.datetime.utcnow())
     images = db.relationship("Image", backref="user", lazy=True)
