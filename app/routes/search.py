@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, current_app as app
 from app.routes.utils import is_valid_extension
 from app.models.image import Image
+from app.schemas.imageschema import ImageSchema
 from werkzeug.utils import secure_filename
 from pathlib import Path
 from PIL import Image as PImage
@@ -12,7 +13,7 @@ search_bp = Blueprint("search", __name__)
 @search_bp.route("/search", methods=("GET", "POST"))
 def search():
     if request.method == "POST" and "image" in request.files:
-        search_by_image()
+        return search_by_image()
     elif request.method == "POST":
         return jsonify(error="You need to set one image!"), 400
 
@@ -21,6 +22,7 @@ def search_by_image():
     if len(request.files.getlist("image")) > 1:
         return jsonify(error="Please upload only one picture!"), 400
 
+    image_schema = ImageSchema(many=True)
     image = request.files["image"]
     filename = secure_filename(image.filename)
     filepath = Path("{}/{}".format(app.config["UPLOAD_FOLDER"], filename))
@@ -31,7 +33,7 @@ def search_by_image():
     uploaded_image_hash = imagehash.phash(PImage.open(str(filepath)))
     similar_images = get_similar_images(uploaded_image_hash)
     filepath.unlink()
-    return jsonify(images=similar_images)
+    return jsonify(images=image_schema.dump(similar_images))
 
 
 def get_similar_images(compared_hash):
