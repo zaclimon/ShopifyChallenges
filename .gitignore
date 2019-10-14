@@ -227,8 +227,11 @@ dmypy.json
 venv/
 
 # Environment variables
-.env
+app/.env
 
 # Google credentials
-google_credentials.json
+app/google_credentials.json
+
+# pycache
+.pytest_cache
 # End of https://www.gitignore.io/api/macos,python,pycharm
