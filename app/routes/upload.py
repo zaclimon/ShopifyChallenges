@@ -7,6 +7,7 @@ from app.models import db
 from app.models.user import User
 from app.models.image import Image
 from app.models.imagedata import ImageData
+from app.routes.utils import is_valid_extension
 from pathlib import Path
 from PIL import Image as PImage
 import os
@@ -93,8 +94,3 @@ def save_to_db(filename, url, size, user, phash):
     user.images.append(image_model)
     db.session.add(user)
     db.session.commit()
-
-
-# Check if the file is a valid image
-def is_valid_extension(filepath):
-    return filepath.suffix in (".jpg", ".jpeg", ".gif", ".png")
