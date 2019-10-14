@@ -6,8 +6,11 @@ from google.cloud.exceptions import NotFound, BadRequest
 from app.models import db
 from app.models.user import User
 from app.models.image import Image
+from app.models.imagedata import ImageData
 from pathlib import Path
+from PIL import Image as PImage
 import os
+import imagehash
 
 upload_bp = Blueprint("upload", __name__)
 
@@ -41,9 +44,10 @@ def upload():
                 continue
 
             # Save the file temporarily in the server's filesystem
-            image.save(filepath)
+            image.save(str(filepath.absolute()))
+            image_hash = imagehash.phash(PImage.open(filepath))
             blob = save_to_bucket(images_bucket, user_id, filename, filepath)
-            save_to_db(filename, blob.public_url, blob.size, user)
+            save_to_db(filename, blob.public_url, blob.size, user, image_hash)
 
         return jsonify(status="Success", not_uploaded_images=skipped_images)
 
@@ -74,16 +78,18 @@ def get_storage_bucket(bucket_name):
 def save_to_bucket(bucket, user_id, filename, filepath):
     # Save the file to Google Cloud Storage
     blob = bucket.blob("{}/{}".format(user_id, filename))
-    blob.upload_from_filename(filepath)
+    blob.upload_from_filename(str(filepath))
     blob.make_public()
     # Remove the file from the server after upload
     filepath.unlink()
     return blob
 
 
-def save_to_db(filename, url, size, user):
+def save_to_db(filename, url, size, user, phash):
     # Save the image info in the database
     image_model = Image(filename=filename, url=url, size=size)
+    image_data = ImageData(image_hash=str(phash))
+    image_model.image_data = image_data
     user.images.append(image_model)
     db.session.add(user)
     db.session.commit()
