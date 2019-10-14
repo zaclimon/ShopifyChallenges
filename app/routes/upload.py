@@ -22,8 +22,8 @@ def upload():
 
     if request.method == "POST" and "images" in request.files:
 
-        if os.getenv("GOOGLE_APPLICATION_CREDENTIALS") is None:
-            return jsonify(error="This application cannot upload to cloud storage"), 400
+        if not is_cloud_storage_variables_available():
+            return jsonify(error="This application cannot upload to cloud storage"), 503
 
         access_token = request.form["token"]
         user_id = get_id_from_token(access_token)
@@ -36,7 +36,7 @@ def upload():
         if user is None:
             return jsonify(error="Invalid user"), 403
 
-        images_bucket = get_storage_bucket("utsuru-images")
+        images_bucket = get_storage_bucket(os.getenv("GOOGLE_CLOUD_STORAGE_BUCKET"))
         images = request.files.getlist("images")
         image_schema = ImageSchema(many=True)
         skipped_files = []
@@ -104,3 +104,9 @@ def save_to_db(filename, url, size, user, phash):
     db.session.add(user)
     db.session.commit()
     return image_model
+
+
+def is_cloud_storage_variables_available():
+    return os.getenv("GOOGLE_APPLICATION_CREDENTIALS") is None \
+           or os.getenv("GOOGLE_CLOUD_STORAGE_BUCKET") is None \
+           or os.getenv("UPLOAD_FOLDER") is None

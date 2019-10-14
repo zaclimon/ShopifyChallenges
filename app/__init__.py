@@ -35,5 +35,8 @@ def verify_env_variables():
     if os.getenv("GOOGLE_APPLICATION_CREDENTIALS") is None:
         warnings.warn("GOOGLE_APPLICATION_CREDENTIALS variable is not set. Upload will not be possible!")
 
+    if os.getenv("GOOGLE_CLOUD_STORAGE_BUCKET") is None:
+        warnings.warn("GOOGLE_CLOUD_STORAGE_BUCKET is not set. Upload will not be possible!")
+
     if os.getenv("UPLOAD_FOLDER") is None:
         warnings.warn("UPLOAD_FOLDER variable is not set. Upload will not be possible!")
