@@ -38,10 +38,11 @@ def upload():
         for image in images:
             filename = secure_filename(image.filename)
             filepath = Path("{}/{}".format(app.config["UPLOAD_FOLDER"], filename))
+            image_model = Image.query.filter_by(user_id=user_id).filter_by(filename=filename).first()
 
-            if Image.query.filter_by(filename=filename).first() is not None and not is_valid_extension(filepath):
+            if image_model is not None or not is_valid_extension(filename):
                 # Skip images whose filenames are already present
-                skipped_images.append(image)
+                skipped_images.append(filename)
                 continue
 
             # Save the file temporarily in the server's filesystem
