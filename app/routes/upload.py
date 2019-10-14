@@ -8,6 +8,7 @@ from app.models.user import User
 from app.models.image import Image
 from app.models.imagedata import ImageData
 from app.routes.utils import is_valid_extension
+from app.schemas.imageschema import ImageSchema
 from pathlib import Path
 from PIL import Image as PImage
 import os
@@ -31,27 +32,34 @@ def upload():
             return jsonify(error="Token not found or invalid"), 400
 
         user = User.query.filter_by(id=user_id).first()
+
+        if user is None:
+            return jsonify(error="Invalid user"), 403
+
         images_bucket = get_storage_bucket("utsuru-images")
         images = request.files.getlist("images")
-        skipped_images = []
+        image_schema = ImageSchema(many=True)
+        skipped_files = []
+        uploaded_images = []
 
         for image in images:
             filename = secure_filename(image.filename)
             filepath = Path("{}/{}".format(app.config["UPLOAD_FOLDER"], filename))
-            image_model = Image.query.filter_by(user_id=user_id).filter_by(filename=filename).first()
+            current_image_model = Image.query.filter_by(user_id=user_id).filter_by(filename=filename).first()
 
-            if image_model is not None or not is_valid_extension(filename):
+            if current_image_model is not None or not is_valid_extension(filepath):
                 # Skip images whose filenames are already present
-                skipped_images.append(filename)
+                skipped_files.append(filename)
                 continue
 
             # Save the file temporarily in the server's filesystem
             image.save(str(filepath.absolute()))
             image_hash = imagehash.phash(PImage.open(filepath))
             blob = save_to_bucket(images_bucket, user_id, filename, filepath)
-            save_to_db(filename, blob.public_url, blob.size, user, image_hash)
+            new_image_model = save_to_db(filename, blob.public_url, blob.size, user, image_hash)
+            uploaded_images.append(new_image_model)
 
-        return jsonify(status="Success", not_uploaded_images=skipped_images)
+        return jsonify(status="Success", images=image_schema.dump(uploaded_images), not_uploaded_files=skipped_files)
 
 
 def get_id_from_token(token):
@@ -95,3 +103,4 @@ def save_to_db(filename, url, size, user, phash):
     user.images.append(image_model)
     db.session.add(user)
     db.session.commit()
+    return image_model
