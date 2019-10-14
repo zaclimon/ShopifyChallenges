@@ -11,13 +11,18 @@ def create_app():
     load_dotenv()
     verify_env_variables()
     app = Flask(__name__)
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("SQLALCHEMY_DATABASE_URI")
-    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+    set_app_variables(app)
     flask_bcrypt.init_app(app)
     models.init_app(app)
     routes.init_app(app)
     schemas.init_app(app)
     return app
+
+
+def set_app_variables(app):
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("SQLALCHEMY_DATABASE_URI")
+    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+    app.config["UPLOAD_FOLDER"] = os.getenv("UPLOAD_FOLDER")
 
 
 def verify_env_variables():
