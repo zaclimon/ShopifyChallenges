@@ -10,7 +10,7 @@ register_bp = Blueprint("register", __name__)
 
 @register_bp.route("/register", methods=("GET", "POST"))
 def register():
-
+    """Serves as an endpoint so the a person can register him/herself to upload pictures."""
     if request.method == "POST":
         user_schema = UserSchema()
 

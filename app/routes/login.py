@@ -10,7 +10,7 @@ login_bp = Blueprint("login", __name__)
 
 @login_bp.route("/login", methods=("GET", "POST"))
 def login():
-
+    """Serves as an endpoint for authenticating a user so he/she can upload or search pictures."""
     if request.method == "POST":
         user_schema = UserSchema()
 

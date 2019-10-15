@@ -7,6 +7,7 @@ flask_bcrypt = Bcrypt()
 
 
 def create_app():
+    """Creates the app object used for the application"""
     from . import models, routes, schemas
     load_dotenv()
     verify_env_variables()
@@ -20,12 +21,17 @@ def create_app():
 
 
 def set_app_variables(app):
+    """Sets the application variables to be used by Flask.
+
+    :param app The Flask instance
+    """
     app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("SQLALCHEMY_DATABASE_URI")
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
     app.config["UPLOAD_FOLDER"] = os.getenv("UPLOAD_FOLDER")
 
 
 def verify_env_variables():
+    """Verifies if environment variables are configured correctly"""
     if os.getenv("SQLALCHEMY_DATABASE_URI") is None:
         raise ValueError("Please set SQLALCHEMY_DATA_BASE in your environment variables")
 

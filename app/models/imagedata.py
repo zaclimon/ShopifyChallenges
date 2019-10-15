@@ -2,7 +2,7 @@ from . import db
 
 
 class ImageData(db.Model):
-
+    """Model class for an Image metadata"""
     __tablename__ = "imagedata"
 
     id = db.Column(db.Integer, primary_key=True)

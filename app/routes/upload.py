@@ -19,7 +19,10 @@ upload_bp = Blueprint("upload", __name__)
 
 @upload_bp.route("/upload", methods=("GET", "POST"))
 def upload():
+    """Serves as an upload endpoint for a user to upload his/her pictures.
 
+    This endpoint supports uploading one or multiple pictures at a time.
+    """
     if request.method == "POST" and "images" in request.files:
 
         if not is_cloud_storage_variables_available():
@@ -43,6 +46,7 @@ def upload():
         uploaded_images = []
 
         for image in images:
+            # See https://werkzeug.palletsprojects.com/en/0.16.x/utils/#werkzeug.utils.secure_filename
             filename = secure_filename(image.filename)
             filepath = Path("{}/{}".format(app.config["UPLOAD_FOLDER"], filename))
             current_image_model = Image.query.filter_by(user_id=user_id).filter_by(filename=filename).first()
@@ -63,7 +67,10 @@ def upload():
 
 
 def get_id_from_token(token):
+    """Retrieves a user id based on his/her token.
 
+    :param token The token used to authenticate the user.
+    """
     try:
         serializer = JSONWebSignatureSerializer(secret_key=app.config["SECRET_KEY"])
         user_id_json = serializer.loads(token)
@@ -73,7 +80,11 @@ def get_id_from_token(token):
 
 
 def get_storage_bucket(bucket_name):
+    """Retrieves the Google Cloud Storage bucket for the application. It creates it if it doesn't exist as well.
 
+    :param bucket_name the Google Cloud Storage bucket name used to store images. Should be defined by the
+    "GOOGLE_CLOUD_STORAGE_BUCKET" environment variable.
+    """
     storage_client = storage.Client()
     try:
         bucket = storage_client.get_bucket(bucket_name)
@@ -86,6 +97,8 @@ def get_storage_bucket(bucket_name):
 
 
 def save_to_bucket(bucket, user_id, filename, filepath):
+    """Saves a picture to the corresponding Google Cloud Storage bucket"""
+
     # Save the file to Google Cloud Storage
     blob = bucket.blob("{}/{}".format(user_id, filename))
     blob.upload_from_filename(str(filepath))
@@ -96,6 +109,8 @@ def save_to_bucket(bucket, user_id, filename, filepath):
 
 
 def save_to_db(filename, url, size, user, phash):
+    """Save an image's metadata to the database"""
+
     # Save the image info in the database
     image_model = Image(filename=filename, url=url, size=size)
     image_data = ImageData(image_hash=str(phash))
@@ -107,6 +122,14 @@ def save_to_db(filename, url, size, user, phash):
 
 
 def is_cloud_storage_variables_available():
+    """Returns true if the variables for Google Cloud Storage are available.
+
+    They consists of:
+        - GOOGLE_APPLICATION_CREDENTIALS
+        - GOOGLE_CLOUD_STORAGE_BUCKET
+        - UPLOAD_FOLDER
+    Note: "UPLOAD_FOLDER" is a a variable used for temporarily saving the an image before uploading it to Google Cloud.
+    """
     return os.getenv("GOOGLE_APPLICATION_CREDENTIALS") is None \
            or os.getenv("GOOGLE_CLOUD_STORAGE_BUCKET") is None \
            or os.getenv("UPLOAD_FOLDER") is None

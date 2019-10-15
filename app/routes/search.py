@@ -12,6 +12,7 @@ search_bp = Blueprint("search", __name__)
 
 @search_bp.route("/search", methods=("GET", "POST"))
 def search():
+    """Serves as an endpoint for searching images"""
     if request.method == "POST" and "image" in request.files:
         return search_by_image()
     elif request.method == "POST":
@@ -19,6 +20,7 @@ def search():
 
 
 def search_by_image():
+    """Searches similar images based on a uploaded one."""
     if len(request.files.getlist("image")) > 1:
         return jsonify(error="Please upload only one picture!"), 400
 
@@ -37,6 +39,14 @@ def search_by_image():
 
 
 def get_similar_images(compared_hash):
+    """Generates the list of similar images based on an image's perceptual hash (phash)
+
+    More information about perceptual hashing is available on the link below:
+    https://en.wikipedia.org/wiki/Perceptual_hashing
+
+    :param compared_hash: The computed hash of the uploaded image
+    """
+
     # This is definitely not an optimal approach as we look over every image that have been upload.
     # A better solution for large amount of images would be to use MySQL which is able to do a BIT_COUNT
     # operation natively for easier comparison between images.
