@@ -1,6 +1,6 @@
 # Utsuru Concept 📷
 
-This application is used for a photo repository as per [Shopify]([https://www.shopify.com/](https://www.shopify.com/)'s backend [coding challenge]([https://docs.google.com/document/d/1ZKRywXQLZWOqVOHC4JkF3LqdpO3Llpfk_CkZPR8bjak/edit](https://docs.google.com/document/d/1ZKRywXQLZWOqVOHC4JkF3LqdpO3Llpfk_CkZPR8bjak/edit)) for Winter 2020 internships.
+This application is used for a photo repository as per [Shopify](https://www.shopify.com/)'s backend [coding challenge](https://docs.google.com/document/d/1ZKRywXQLZWOqVOHC4JkF3LqdpO3Llpfk_CkZPR8bjak/edit) for Winter 2020 internships.
 
 ## Why Utsuru Concept?
 
@@ -10,11 +10,11 @@ Concept means that it is a proof-of-concept and that it may or may not be used f
 
 ## Prerequisites
 
-- [Python 3]([https://www.python.org/](https://www.python.org/)
+- [Python 3](https://www.python.org/)
 
-- [PostgreSQL]([https://www.postgresql.org/](https://www.postgresql.org/)
+- [PostgreSQL](https://www.postgresql.org/)
 
-- [Google Cloud Platform]([https://cloud.google.com/](https://cloud.google.com/)
+- [Google Cloud Platform](https://www.postgresql.org/)
 
 ## How to get started
 
@@ -28,9 +28,9 @@ Concept means that it is a proof-of-concept and that it may or may not be used f
 
 - Fill the environment variables inside `.env.sample` and rename it to `.env`.
   
-  - For Google Cloud Storage, you will need to obtain your [service account's]([https://cloud.google.com/docs/authentication/production](https://cloud.google.com/docs/authentication/production) `.json` file.
+  - For Google Cloud Storage, you will need to obtain your [service account's](https://cloud.google.com/docs/authentication/production) `.json` file.
   
-  - For `SQLALCHEMY_DATABASE_URI`, please refer to [Flask's]([https://flask-sqlalchemy.palletsprojects.com/en/2.x/config/](https://flask-sqlalchemy.palletsprojects.com/en/2.x/config/) documentation for examples on how to connect your database.
+  - For `SQLALCHEMY_DATABASE_URI`, please refer to [Flask's](https://flask-sqlalchemy.palletsprojects.com/en/2.x/config/) documentation for examples on how to connect your database.
 
 - Start Flask
   
@@ -38,7 +38,7 @@ Concept means that it is a proof-of-concept and that it may or may not be used f
 
 - Enjoy! 🎉
   
-  **Note**: It is possible to also use a [virtual environment]([https://docs.python.org/3/library/venv.html](https://docs.python.org/3/library/venv.html) for better isolation between your Python packages.
+  **Note**: It is possible to also use a [virtual environment](https://docs.python.org/3/library/venv.html) for better isolation between your Python packages.
 
 ## Architecture
 
