@@ -53,7 +53,7 @@ All endpoints are to be used with a `POST` request method. As such, you could us
 
 ## Architecture
 
-The document [`ARCHITECTURE.MD`](./ARCHITECTURE.MD) explains how the application should behave as well as the reasoning behind some of the choices made when designing it.
+The document [`ARCHITECTURE.md`](./ARCHITECTURE.md) explains how the application should behave as well as the reasoning behind some of the choices made when designing it.
 
 ## Tests
 
