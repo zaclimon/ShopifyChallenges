@@ -26,7 +26,7 @@ Concept means that it is a proof-of-concept and that it may or may not be used f
   
   `pip install -r requirements.txt`
 
-- Fill the environment variables inside `.env.sample` and rename it to `.env`.
+- Go to the `app/` directory, fill the environment variables inside `.env.sample` and rename it to `.env`.
   
   - For Google Cloud Storage, you will need to obtain your [service account's](https://cloud.google.com/docs/authentication/production) `.json` file.
   
