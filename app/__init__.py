@@ -33,7 +33,7 @@ def set_app_variables(app):
 def verify_env_variables():
     """Verifies if environment variables are configured correctly"""
     if os.getenv("SQLALCHEMY_DATABASE_URI") is None:
-        raise ValueError("Please set SQLALCHEMY_DATA_BASE in your environment variables")
+        raise ValueError("Please set SQLALCHEMY_DATABASE_URI in your environment variables")
 
     if os.getenv("SECRET_KEY") is None:
         raise ValueError("Please set SECRET_KEY in your environment variables")
