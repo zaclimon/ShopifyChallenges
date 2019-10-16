@@ -143,6 +143,6 @@ def is_cloud_storage_variables_available():
         - UPLOAD_FOLDER
     Note: "UPLOAD_FOLDER" is a a variable used for temporarily saving the an image before uploading it to Google Cloud.
     """
-    return os.getenv("GOOGLE_APPLICATION_CREDENTIALS") is None \
-           or os.getenv("GOOGLE_CLOUD_STORAGE_BUCKET") is None \
-           or os.getenv("UPLOAD_FOLDER") is None
+    return os.getenv("GOOGLE_APPLICATION_CREDENTIALS") is not None \
+           and os.getenv("GOOGLE_CLOUD_STORAGE_BUCKET") is not None \
+           and os.getenv("UPLOAD_FOLDER") is not None
