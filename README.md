@@ -14,7 +14,7 @@ Concept means that it is a proof-of-concept and that it may or may not be used f
 
 - [PostgreSQL](https://www.postgresql.org/)
 
-- [Google Cloud Platform](https://www.postgresql.org/)
+- [Google Cloud Platform](https://cloud.google.com/)
 
 ## How to get started
 
