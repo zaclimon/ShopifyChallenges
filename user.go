@@ -8,10 +8,11 @@ import (
 )
 
 type User struct {
-	Id        uuid.UUID `gorm:"primary_key"`
+	ID        uuid.UUID `gorm:"primary_key"`
 	Email     string    `gorm:"size:255;unique"`
 	Password  string    `gorm:"size:72"`
 	CreatedAt time.Time `sql:"DEFAULT:current_timestamp"`
+	Images    []Image
 }
 
 func (user *User) BeforeCreate(scope *gorm.Scope) error {

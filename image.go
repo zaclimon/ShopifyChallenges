@@ -7,11 +7,12 @@ import (
 )
 
 type Image struct {
-	Id       uuid.UUID `gorm:"primary_key"`
-	FileName string    `gorm:"not null"`
-	Url      string
-	Size     uint64
-	UserId   uuid.UUID
+	ID        uuid.UUID `gorm:"primary_key"`
+	FileName  string    `gorm:"not null"`
+	Url       string
+	Size      uint64
+	UserID    uuid.UUID
+	ImageData ImageData
 }
 
 func (image *Image) BeforeCreate(scope *gorm.Scope) error {

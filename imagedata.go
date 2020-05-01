@@ -9,7 +9,7 @@ import (
 type ImageData struct {
 	ID        uuid.UUID `gorm:"primary_key"`
 	ImageHash string
-	ImageId   uuid.UUID
+	ImageID   uuid.UUID
 }
 
 func (imageData *ImageData) BeforeCreate(scope *gorm.Scope) error {
