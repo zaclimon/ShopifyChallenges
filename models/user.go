@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
+	"golang.org/x/crypto/bcrypt"
 	"time"
 )
 
@@ -26,19 +27,33 @@ func (user *User) BeforeCreate(scope *gorm.Scope) error {
 	return scope.SetColumn("ID", generatedUuid)
 }
 
-func InsertNewUser(email string, password string, dbObj *gorm.DB) error {
+func CreateAndInsertNewUser(email string, password string, dbObj *gorm.DB) (*User, error) {
 	if isUserExists(email, dbObj) {
-		return errors.New("A user with this email already exists")
+		return nil, errors.New("A user with this email already exists")
+	}
+
+	hashedPassword, err := hashPassword(password)
+
+	if err != nil {
+		return nil, err
 	}
 
 	newUser := &User{
 		ID:       uuid.New(),
 		Email:    email,
-		Password: password,
+		Password: hashedPassword,
 	}
 
 	dbObj.Create(newUser)
-	return nil
+	return newUser, nil
+}
+
+func hashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", errors.New("An error happened while hashing the password")
+	}
+	return string(bytes), nil
 }
 
 func isUserExists(email string, dbObj *gorm.DB) bool {
