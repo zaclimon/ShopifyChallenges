@@ -44,8 +44,22 @@ func CreateAndInsertNewUser(email string, password string, dbObj *gorm.DB) (*Use
 		Password: hashedPassword,
 	}
 
-	dbObj.Create(newUser)
+	dbObj.Create(&newUser)
 	return newUser, nil
+}
+
+func GetUserByEmail(email string, password string, dbObj *gorm.DB) (*User, error) {
+	if !isUserExists(email, dbObj) {
+		return nil, errors.New("The user does not exist")
+	}
+	var user User
+	dbObj.First(&user, "email = ?", email)
+
+	if validatePassword(user.Password, password) {
+		return &user, nil
+	}
+
+	return nil, errors.New("The credentials entered are not valid")
 }
 
 func hashPassword(password string) (string, error) {
@@ -60,4 +74,8 @@ func isUserExists(email string, dbObj *gorm.DB) bool {
 	var user User
 	dbObj.First(&user, "email = ?", email)
 	return user.Email != ""
+}
+
+func validatePassword(passwordHash string, passwordCandidate string) bool {
+	return bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(passwordCandidate)) == nil
 }
