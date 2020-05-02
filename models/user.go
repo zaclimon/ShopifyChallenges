@@ -17,6 +17,11 @@ type User struct {
 	Images    []Image
 }
 
+var DbUserNotFoundError = errors.New("The user does not exist")
+var DbDuplicatedEmailError = errors.New("A user with this email already exists")
+var InvalidCredentialsError = errors.New("The credentials entered are not valid")
+var PasswordHashError = errors.New("An error happened while hashing the password")
+
 func (user *User) BeforeCreate(scope *gorm.Scope) error {
 	generatedUuid, err := uuid.NewRandom()
 	if err != nil {
@@ -29,7 +34,7 @@ func (user *User) BeforeCreate(scope *gorm.Scope) error {
 
 func CreateAndInsertNewUser(email string, password string, dbObj *gorm.DB) (*User, error) {
 	if isUserExists(email, dbObj) {
-		return nil, errors.New("A user with this email already exists")
+		return nil, DbDuplicatedEmailError
 	}
 
 	hashedPassword, err := hashPassword(password)
@@ -50,7 +55,7 @@ func CreateAndInsertNewUser(email string, password string, dbObj *gorm.DB) (*Use
 
 func GetUserByEmail(email string, password string, dbObj *gorm.DB) (*User, error) {
 	if !isUserExists(email, dbObj) {
-		return nil, errors.New("The user does not exist")
+		return nil, DbUserNotFoundError
 	}
 	var user User
 	dbObj.First(&user, "email = ?", email)
@@ -59,13 +64,13 @@ func GetUserByEmail(email string, password string, dbObj *gorm.DB) (*User, error
 		return &user, nil
 	}
 
-	return nil, errors.New("The credentials entered are not valid")
+	return nil, InvalidCredentialsError
 }
 
 func hashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return "", errors.New("An error happened while hashing the password")
+		return "", PasswordHashError
 	}
 	return string(bytes), nil
 }

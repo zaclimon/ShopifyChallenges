@@ -3,6 +3,7 @@ package controllers
 import (
 	"UtsuruConcept/db"
 	"UtsuruConcept/models"
+	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -30,7 +31,13 @@ func Login(c *gin.Context) {
 	user, err := models.GetUserByEmail(jsonRequest.Email, jsonRequest.Password, dbObj)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
+		errorCode := http.StatusInternalServerError
+		if errors.Is(err, models.InvalidCredentialsError) {
+			errorCode = http.StatusForbidden
+		} else if errors.Is(err, models.DbUserNotFoundError) {
+			errorCode = http.StatusNotFound
+		}
+		c.JSON(errorCode, gin.H{
 			"error": err.Error(),
 		})
 		return

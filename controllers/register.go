@@ -3,6 +3,7 @@ package controllers
 import (
 	"UtsuruConcept/db"
 	"UtsuruConcept/models"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -23,16 +24,20 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	user, err := models.CreateAndInsertNewUser(jsonRequest.Email, jsonRequest.Password, db.GetDb())
+	_, err = models.CreateAndInsertNewUser(jsonRequest.Email, jsonRequest.Password, db.GetDb())
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
+		errorCode := http.StatusInternalServerError
+		if errors.Is(err, models.DbDuplicatedEmailError) {
+			errorCode = http.StatusOK
+		}
+		c.JSON(errorCode, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"id": user.ID,
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "The user has been created successfully",
 	})
 }
