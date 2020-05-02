@@ -11,8 +11,8 @@ import (
 
 type User struct {
 	ID        uuid.UUID `gorm:"primary_key"`
-	Email     string    `gorm:"size:255;unique"`
-	Password  string    `gorm:"size:72"`
+	Email     string    `gorm:"size:255;not null;unique"`
+	Password  string    `gorm:"size:72;not null"`
 	CreatedAt time.Time `sql:"DEFAULT:current_timestamp"`
 	Images    []Image
 }
