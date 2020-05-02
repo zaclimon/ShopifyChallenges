@@ -1,6 +1,7 @@
-package main
+package models
 
 import (
+	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
@@ -23,4 +24,25 @@ func (user *User) BeforeCreate(scope *gorm.Scope) error {
 	}
 
 	return scope.SetColumn("ID", generatedUuid)
+}
+
+func InsertNewUser(email string, password string, dbObj *gorm.DB) error {
+	if isUserExists(email, dbObj) {
+		return errors.New("A user with this email already exists")
+	}
+
+	newUser := &User{
+		ID:       uuid.New(),
+		Email:    email,
+		Password: password,
+	}
+
+	dbObj.Create(newUser)
+	return nil
+}
+
+func isUserExists(email string, dbObj *gorm.DB) bool {
+	var user User
+	dbObj.First(&user, "email = ?", email)
+	return user.Email != ""
 }
