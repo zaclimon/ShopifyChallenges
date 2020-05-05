@@ -8,6 +8,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"os"
 )
 
 type UploadRequest struct {
@@ -30,7 +31,8 @@ func Upload(c *gin.Context) {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
 
-		return []byte("test"), nil
+		jwtSecret := os.Getenv("JWT_SECRET")
+		return []byte(jwtSecret), nil
 	})
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
@@ -67,7 +69,8 @@ func Upload(c *gin.Context) {
 
 				if err != nil {
 					// Bucket does not exist yet
-					if err = userBucket.Create(ctx, "Project string", nil); err != nil {
+					projectID := os.Getenv("GOOGLE_CLOUD_PROJECT_ID")
+					if err = userBucket.Create(ctx, projectID, nil); err != nil {
 						// Error happened while trying to create the user bucket.
 						showResponseError(c, http.StatusInternalServerError, err)
 					}

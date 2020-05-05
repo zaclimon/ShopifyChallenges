@@ -5,13 +5,21 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"os"
 )
 
 var dbObj *gorm.DB
 
 func Init() {
 	if dbObj == nil {
-		db, err := gorm.Open("mysql", "root@tcp(localhost:3306)/mysql?&parseTime=True&loc=UTC")
+		dbUser := os.Getenv("DB_USER")
+		dbPass := os.Getenv("DB_PASSWORD")
+		dbHost := os.Getenv("DB_HOST")
+		dbPort := os.Getenv("DB_PORT")
+		dbName := os.Getenv("DB_NAME")
+
+		connectionString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?&parseTime=True&loc=UTC", dbUser, dbPass, dbHost, dbPort, dbName)
+		db, err := gorm.Open("mysql", connectionString)
 
 		if err != nil {
 			fmt.Println("Error while trying to initialize the database", err)

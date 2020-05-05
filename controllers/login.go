@@ -7,6 +7,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"os"
 )
 
 // Type responsible for handling login information
@@ -47,8 +48,8 @@ func Login(c *gin.Context) {
 		"id": user.ID,
 	})
 
-	// TODO: Use a config for the signing private key
-	tokenString, err := token.SignedString([]byte("test"))
+	jwtSecret := os.Getenv("JWT_SECRET")
+	tokenString, err := token.SignedString([]byte(jwtSecret))
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
