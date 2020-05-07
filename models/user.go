@@ -33,7 +33,7 @@ func (user *User) BeforeCreate(scope *gorm.Scope) error {
 }
 
 func CreateAndInsertNewUser(email string, password string, dbObj *gorm.DB) (*User, error) {
-	if isUserExists(email, dbObj) {
+	if isUserEmailExists(email, dbObj) {
 		return nil, DbDuplicatedEmailError
 	}
 
@@ -54,7 +54,7 @@ func CreateAndInsertNewUser(email string, password string, dbObj *gorm.DB) (*Use
 }
 
 func GetUserByEmail(email string, password string, dbObj *gorm.DB) (*User, error) {
-	if !isUserExists(email, dbObj) {
+	if !isUserEmailExists(email, dbObj) {
 		return nil, DbUserNotFoundError
 	}
 	var user User
@@ -67,6 +67,15 @@ func GetUserByEmail(email string, password string, dbObj *gorm.DB) (*User, error
 	return nil, InvalidCredentialsError
 }
 
+func GetUserById(id string, dbObj *gorm.DB) (*User, error) {
+	if !isUserIdExists(id, dbObj) {
+		return nil, DbUserNotFoundError
+	}
+	var user User
+	dbObj.First(&user, "id = ?", id)
+	return &user, nil
+}
+
 func hashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -75,16 +84,18 @@ func hashPassword(password string) (string, error) {
 	return string(bytes), nil
 }
 
-func isUserExists(email string, dbObj *gorm.DB) bool {
+func isUserEmailExists(email string, dbObj *gorm.DB) bool {
 	var user User
 	dbObj.First(&user, "email = ?", email)
 	return user.Email != ""
 }
 
-func validatePassword(passwordHash string, passwordCandidate string) bool {
-	return bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(passwordCandidate)) == nil
+func isUserIdExists(id string, dbObj *gorm.DB) bool {
+	var user User
+	dbObj.First(&user, "id = ?", id)
+	return user.ID != uuid.Nil
 }
 
-func UpdateUser(dbObj *gorm.DB, user User) {
-	dbObj.Update(user)
+func validatePassword(passwordHash string, passwordCandidate string) bool {
+	return bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(passwordCandidate)) == nil
 }
