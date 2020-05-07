@@ -10,7 +10,7 @@ import (
 
 type ImageData struct {
 	ID        uuid.UUID `gorm:"primary_key"`
-	ImageHash string
+	ImageHash uint64
 	ImageID   uuid.UUID
 }
 
@@ -26,13 +26,12 @@ func (imageData *ImageData) BeforeCreate(scope *gorm.Scope) error {
 
 func CreateImageData(image image.Image) (*ImageData, error) {
 	hash, err := goimagehash.PerceptionHash(image)
-
 	if err != nil {
 		return nil, err
 	}
 
 	newImageData := &ImageData{
-		ImageHash: hash.ToString(),
+		ImageHash: hash.GetHash(),
 	}
 
 	return newImageData, nil
