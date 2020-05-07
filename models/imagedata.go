@@ -2,8 +2,10 @@ package models
 
 import (
 	"fmt"
+	"github.com/corona10/goimagehash"
 	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
+	"image"
 )
 
 type ImageData struct {
@@ -20,4 +22,18 @@ func (imageData *ImageData) BeforeCreate(scope *gorm.Scope) error {
 	}
 
 	return scope.SetColumn("ID", generatedUuid)
+}
+
+func CreateImageData(image image.Image) (*ImageData, error) {
+	hash, err := goimagehash.PerceptionHash(image)
+
+	if err != nil {
+		return nil, err
+	}
+
+	newImageData := &ImageData{
+		ImageHash: hash.ToString(),
+	}
+
+	return newImageData, nil
 }

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"UtsuruConcept/db"
 	"UtsuruConcept/models"
 	"cloud.google.com/go/storage"
 	"context"
@@ -47,6 +48,11 @@ func Upload(c *gin.Context) {
 			return
 		}
 
+		var user models.User
+
+		userID := claims["id"].(string)
+		dbObj := db.GetDb()
+		dbObj.Where("id = ?", userID).First(&user)
 		files := form.File["images"]
 		ctx := context.Background()
 		client, err := storage.NewClient(ctx)
@@ -60,16 +66,17 @@ func Upload(c *gin.Context) {
 		bucketName := os.Getenv("CLOUD_STORAGE_BUCKET_NAME")
 		imagesFolderName := os.Getenv("CLOUD_STORAGE_IMAGES_FOLDER")
 		bucket := client.Bucket(bucketName)
+		uploadedFiles := make([]string, 0)
+		notUploadedFiles := make([]string, 0)
 
 		for _, fileInfo := range files {
 			// Verify the extension of the file
-			if models.IsValidImageExtension(fileInfo.Filename) {
+			if models.IsValidImageExtension(fileInfo.Filename) && !models.IsUserImageExists(userID, fileInfo.Filename, dbObj) {
 				// Upload to cloud storage
 				// 1. Ensure that the bucket (folder) for the user exists. Create it if not available
 				// 2. Verify if file metadata doesn't exist first.
 				// 3. Create the file metadata in the database.
 				// 4. Upload the file to the bucket (If filename already exists, don't upload it twice --> Filename based upload instead of ID based)
-				userID := claims["id"].(string)
 
 				userFolder := bucket.Object(fmt.Sprintf("%s/%s/", imagesFolderName, userID))
 				_, err = userFolder.Attrs(ctx)
@@ -79,7 +86,7 @@ func Upload(c *gin.Context) {
 					fmt.Println("Creating folder for user")
 					folderWriter := userFolder.NewWriter(ctx)
 					_, err := folderWriter.Write(make([]byte, 0))
-					folderWriter.Close()
+					_ = folderWriter.Close()
 					if err != nil {
 						// Error happened while trying to create the user folder.
 						showResponseError(c, http.StatusInternalServerError, err)
@@ -108,24 +115,43 @@ func Upload(c *gin.Context) {
 					showResponseError(c, http.StatusInternalServerError, err)
 					return
 				}
-				savedFileReader.Close()
-				storageWriter.Close()
+				_ = storageWriter.Close()
+				_ = savedFileReader.Close()
+				// Create database metadata
+				// 1. Compute PHash
+				decodedImage, err := models.DecodeImage(destinationPath)
+				if err != nil {
+					fmt.Printf("Affected file: %s\n", fileInfo.Filename)
+					showResponseError(c, http.StatusInternalServerError, err)
+					_ = savedFileReader.Close()
+					_ = os.Remove(destinationPath)
+					return
+				}
 				// We don't want to fill up the storage in the VM/container needlessly so delete the temporary image.
 				fmt.Println("Deleting temporary file on system")
-				err = os.Remove(destinationPath)
+				_ = os.Remove(destinationPath)
+				// 2. Create ImageData struct
+				imageData, err := models.CreateImageData(decodedImage)
 				if err != nil {
 					showResponseError(c, http.StatusInternalServerError, err)
 					return
 				}
-				// Create database metadata
-				// 1. Compute PHash
-				// 2. Create ImageData struct
 				// 3. Create Image Struct
+				imageModel := models.CreateImage(fileInfo.Filename, fileInfo.Size, *imageData)
 				// 4. Link Image to user
-				// 5. Update user
+				user.Images = append(user.Images, *imageModel)
+				uploadedFiles = append(uploadedFiles, fileInfo.Filename)
+			} else {
+				notUploadedFiles = append(notUploadedFiles, fileInfo.Filename)
 			}
 		}
-
+		// 5. Update user
+		dbObj.Save(&user)
+		// 6. Return files that has been uploaded and not uploaded to the user.
+		c.JSON(http.StatusOK, gin.H{
+			"uploaded_files":     uploadedFiles,
+			"not_uploaded_files": notUploadedFiles,
+		})
 	} else {
 		showResponseError(c, http.StatusBadRequest, err)
 		return

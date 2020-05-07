@@ -84,3 +84,7 @@ func isUserExists(email string, dbObj *gorm.DB) bool {
 func validatePassword(passwordHash string, passwordCandidate string) bool {
 	return bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(passwordCandidate)) == nil
 }
+
+func UpdateUser(dbObj *gorm.DB, user User) {
+	dbObj.Update(user)
+}
