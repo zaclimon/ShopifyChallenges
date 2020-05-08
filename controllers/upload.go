@@ -6,7 +6,6 @@ import (
 	"cloud.google.com/go/storage"
 	"context"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/jinzhu/gorm"
@@ -23,52 +22,38 @@ type UploadRequest struct {
 
 func Upload(c *gin.Context) {
 	var requestBody UploadRequest
-	err := c.ShouldBindWith(&requestBody, binding.FormMultipart)
+	if err := c.ShouldBindWith(&requestBody, binding.FormMultipart); err != nil {
+		showResponseError(c, http.StatusBadRequest, err)
+		return
+	}
 
+	userID, err := validateToken(requestBody.Token)
 	if err != nil {
 		showResponseError(c, http.StatusBadRequest, err)
 		return
 	}
 
-	// Validate that the token is valid before continuing
-	token, err := jwt.Parse(requestBody.Token, func(token *jwt.Token) (interface{}, error) {
-		// Validate the algorithm used for signing the token.
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-		}
-
-		jwtSecret := os.Getenv("JWT_SECRET")
-		return []byte(jwtSecret), nil
-	})
-
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		userID := claims["id"].(string)
-		dbObj := db.GetDb()
-		user, bucket, err := initUploadProcess(c, userID, dbObj)
-		if err != nil {
-			// The body has been defined in initUploadProcess()
-			return
-		}
-		uploadedFiles, notUploadedFiles, err := uploadProcess(user, requestBody.Images, bucket, dbObj, c)
-
-		if err != nil {
-			showResponseError(c, http.StatusInternalServerError, err)
-			return
-		}
-
-		dbObj.Save(&user)
-		c.JSON(http.StatusOK, gin.H{
-			"uploaded_files":     uploadedFiles,
-			"not_uploaded_files": notUploadedFiles,
-		})
-	} else {
-		showResponseError(c, http.StatusBadRequest, err)
+	dbObj := db.GetDb()
+	user, bucket, err := initUploadProcess(c, userID, dbObj)
+	if err != nil {
+		// The body has been defined in initUploadProcess()
 		return
 	}
+
+	uploadedFiles, notUploadedFiles, err := uploadProcess(user, requestBody.Images, bucket, dbObj, c)
+	if err != nil {
+		showResponseError(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	dbObj.Save(&user)
+	c.JSON(http.StatusOK, gin.H{
+		"uploaded_files":     uploadedFiles,
+		"not_uploaded_files": notUploadedFiles,
+	})
 }
 
 func initUploadProcess(c *gin.Context, userID string, dbObj *gorm.DB) (*models.User, *storage.BucketHandle, error) {
-
 	user, err := models.GetUserById(userID, dbObj)
 
 	if err != nil {
@@ -89,12 +74,6 @@ func initUploadProcess(c *gin.Context, userID string, dbObj *gorm.DB) (*models.U
 	bucketName := os.Getenv("CLOUD_STORAGE_BUCKET_NAME")
 	bucket := client.Bucket(bucketName)
 	return user, bucket, nil
-}
-
-func showResponseError(c *gin.Context, statusCode int, err error) {
-	c.JSON(statusCode, gin.H{
-		"error": err.Error(),
-	})
 }
 
 func uploadProcess(user *models.User, files []*multipart.FileHeader, bucket *storage.BucketHandle, dbObj *gorm.DB, c *gin.Context) ([]string, []string, error) {
@@ -121,7 +100,10 @@ func uploadProcess(user *models.User, files []*multipart.FileHeader, bucket *sto
 				return nil, nil, err
 			}
 
-			imageData, err := generateImageData(fileInfo.Filename)
+			uploadFolder := os.Getenv("UPLOAD_FOLDER")
+			imagePath := fmt.Sprintf("%s/%s", uploadFolder, fileInfo.Filename)
+			imageData, err := generateImageData(imagePath)
+			_ = os.Remove(imagePath)
 
 			if err != nil {
 				return nil, nil, err
@@ -147,15 +129,6 @@ func createBucketUserFolder(userFolderHandle *storage.ObjectHandle) error {
 	return nil
 }
 
-func saveUploadedFile(fileInfo *multipart.FileHeader, c *gin.Context) error {
-	uploadFolder := os.Getenv("UPLOAD_FOLDER")
-	destinationPath := fmt.Sprintf("%s/%s", uploadFolder, fileInfo.Filename)
-	if err := c.SaveUploadedFile(fileInfo, destinationPath); err != nil {
-		return err
-	}
-	return nil
-}
-
 func uploadToGCP(bucket *storage.BucketHandle, imagesFolderName string, userID string, fileName string) error {
 	uploadFolder := os.Getenv("UPLOAD_FOLDER")
 	imageObject := bucket.Object(fmt.Sprintf("%s/%s/%s", imagesFolderName, userID, fileName))
@@ -170,22 +143,4 @@ func uploadToGCP(bucket *storage.BucketHandle, imagesFolderName string, userID s
 	defer storageWriter.Close()
 	defer savedFileReader.Close()
 	return nil
-}
-
-func generateImageData(fileName string) (*models.ImageData, error) {
-	uploadFolder := os.Getenv("UPLOAD_FOLDER")
-	destinationPath := fmt.Sprintf("%s/%s", uploadFolder, fileName)
-	decodedImage, err := models.DecodeImage(destinationPath)
-	defer os.Remove(destinationPath)
-
-	if err != nil {
-		return nil, err
-	}
-
-	imageData, err := models.CreateImageData(decodedImage)
-	if err != nil {
-		return nil, err
-	}
-
-	return imageData, nil
 }
