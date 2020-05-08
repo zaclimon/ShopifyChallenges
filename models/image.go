@@ -18,7 +18,7 @@ type Image struct {
 	Url       string
 	Size      int64
 	UserID    uuid.UUID
-	ImageData ImageData
+	ImageData ImageData `json:"-"`
 }
 
 func (image *Image) BeforeCreate(scope *gorm.Scope) error {
