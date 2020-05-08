@@ -17,12 +17,13 @@ import (
 )
 
 type UploadRequest struct {
-	Token string `form:"token" json:"token" xml:"token" binding:"required"`
+	Token  string                  `form:"token" binding:"required"`
+	Images []*multipart.FileHeader `form:"images" binding:"required"`
 }
 
 func Upload(c *gin.Context) {
-	var multipartFormRequest UploadRequest
-	err := c.ShouldBindWith(&multipartFormRequest, binding.FormMultipart)
+	var requestBody UploadRequest
+	err := c.ShouldBindWith(&requestBody, binding.FormMultipart)
 
 	if err != nil {
 		showResponseError(c, http.StatusBadRequest, err)
@@ -30,7 +31,7 @@ func Upload(c *gin.Context) {
 	}
 
 	// Validate that the token is valid before continuing
-	token, err := jwt.Parse(multipartFormRequest.Token, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(requestBody.Token, func(token *jwt.Token) (interface{}, error) {
 		// Validate the algorithm used for signing the token.
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
@@ -43,12 +44,12 @@ func Upload(c *gin.Context) {
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		userID := claims["id"].(string)
 		dbObj := db.GetDb()
-		user, files, bucket, err := initUploadProcess(c, userID, dbObj)
+		user, bucket, err := initUploadProcess(c, userID, dbObj)
 		if err != nil {
 			// The body has been defined in initUploadProcess()
 			return
 		}
-		uploadedFiles, notUploadedFiles, err := uploadProcess(user, files, bucket, dbObj, c)
+		uploadedFiles, notUploadedFiles, err := uploadProcess(user, requestBody.Images, bucket, dbObj, c)
 
 		if err != nil {
 			showResponseError(c, http.StatusInternalServerError, err)
@@ -66,35 +67,28 @@ func Upload(c *gin.Context) {
 	}
 }
 
-func initUploadProcess(c *gin.Context, userID string, dbObj *gorm.DB) (*models.User, []*multipart.FileHeader, *storage.BucketHandle, error) {
-	form, err := c.MultipartForm()
-
-	if err != nil {
-		showResponseError(c, http.StatusBadRequest, err)
-		return nil, nil, nil, err
-	}
+func initUploadProcess(c *gin.Context, userID string, dbObj *gorm.DB) (*models.User, *storage.BucketHandle, error) {
 
 	user, err := models.GetUserById(userID, dbObj)
 
 	if err != nil {
 		// The user does not exist
 		showResponseError(c, http.StatusBadRequest, err)
-		return nil, nil, nil, err
+		return nil, nil, err
 	}
 
-	files := form.File["images"]
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 
 	if err != nil {
 		// The client has not been configured correctly
 		showResponseError(c, http.StatusInternalServerError, err)
-		return nil, nil, nil, err
+		return nil, nil, err
 	}
 
 	bucketName := os.Getenv("CLOUD_STORAGE_BUCKET_NAME")
 	bucket := client.Bucket(bucketName)
-	return user, files, bucket, nil
+	return user, bucket, nil
 }
 
 func showResponseError(c *gin.Context, statusCode int, err error) {

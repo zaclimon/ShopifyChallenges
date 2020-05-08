@@ -7,18 +7,20 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"strconv"
 )
 
 type SearchRequest struct {
-	Token string `form:"token" json:"token" xml:"token" binding:"required"`
+	Token string                `form:"token" binding:"required"`
+	Image *multipart.FileHeader `form:"image" binding:"required"`
 }
 
 func Search(c *gin.Context) {
-	var multipartFormRequest SearchRequest
-	err := c.ShouldBindWith(&multipartFormRequest, binding.FormMultipart)
+	var requestBody SearchRequest
+	err := c.ShouldBindWith(&requestBody, binding.FormMultipart)
 
 	if err != nil {
 		showResponseError(c, http.StatusBadRequest, err)
@@ -26,7 +28,7 @@ func Search(c *gin.Context) {
 	}
 
 	// Validate that the token is valid before continuing
-	token, err := jwt.Parse(multipartFormRequest.Token, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(requestBody.Token, func(token *jwt.Token) (interface{}, error) {
 		// Validate the algorithm used for signing the token.
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
@@ -37,25 +39,18 @@ func Search(c *gin.Context) {
 	})
 
 	if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		//userID := claims["id"].(string)
 		dbObj := db.GetDb()
-		form, err := c.MultipartForm()
 
-		if err != nil {
-			showResponseError(c, http.StatusBadRequest, err)
-			return
-		}
-		files := form.File["image"]
-		if len(files) == 0 || len(files) >= 2 {
+		if requestBody.Image == nil {
 			// Return an error saying only one file can be looked at a time
 			return
 		}
-		fileInfo := files[0]
-		if models.IsValidImageExtension(fileInfo.Filename) {
+
+		if models.IsValidImageExtension(requestBody.Image.Filename) {
 			// Do the query to verify the images
 			uploadFolder := os.Getenv("UPLOAD_FOLDER")
-			imagePath := fmt.Sprintf("%s/%s", uploadFolder, fileInfo.Filename)
-			err = c.SaveUploadedFile(fileInfo, imagePath)
+			imagePath := fmt.Sprintf("%s/%s", uploadFolder, requestBody.Image.Filename)
+			err = c.SaveUploadedFile(requestBody.Image, imagePath)
 			defer os.Remove(imagePath)
 			if err != nil {
 				showResponseError(c, http.StatusInternalServerError, err)
