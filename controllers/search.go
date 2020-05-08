@@ -39,50 +39,50 @@ func Search(c *gin.Context) {
 	})
 
 	if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		dbObj := db.GetDb()
-
-		if requestBody.Image == nil {
-			// Return an error saying only one file can be looked at a time
-			return
-		}
-
 		if models.IsValidImageExtension(requestBody.Image.Filename) {
 			// Do the query to verify the images
 			uploadFolder := os.Getenv("UPLOAD_FOLDER")
 			imagePath := fmt.Sprintf("%s/%s", uploadFolder, requestBody.Image.Filename)
-			err = c.SaveUploadedFile(requestBody.Image, imagePath)
-			defer os.Remove(imagePath)
-			if err != nil {
+
+			if err = c.SaveUploadedFile(requestBody.Image, imagePath); err != nil {
 				showResponseError(c, http.StatusInternalServerError, err)
 				return
 			}
-			imageObj, err := models.DecodeImage(imagePath)
-			if err != nil {
-				showResponseError(c, http.StatusInternalServerError, err)
-				return
-			}
-			imageData, err := models.CreateImageData(imageObj)
-			if err != nil {
-				showResponseError(c, http.StatusInternalServerError, err)
-				return
-			}
-			// Do an SQL request to verify the image based on its ImageHash
-			fmt.Printf("PHash of image: %d\n", imageData.ImageHash)
-			var images []models.Image
-			hashThreshold, err := strconv.Atoi(os.Getenv("PHASH_THRESHOLD"))
+
+			imageData, err := generateImageData(requestBody.Image.Filename)
 
 			if err != nil {
 				showResponseError(c, http.StatusInternalServerError, err)
 				return
 			}
 
-			sqlQuery := fmt.Sprintf("SELECT images.* from images, image_data WHERE images.id = image_data.image_id AND bit_count(%d ^ image_data.image_hash) <= %d", imageData.ImageHash, hashThreshold)
-			dbObj.Raw(sqlQuery).Find(&images)
+			similarImages, err := getSimilarImages(imageData.ImageHash)
+
+			if err != nil {
+				showResponseError(c, http.StatusInternalServerError, err)
+				return
+			}
+
 			c.JSON(http.StatusOK, gin.H{
-				"images": images,
+				"images": similarImages,
 			})
 		} else {
 			// Return error
 		}
 	}
+}
+
+func getSimilarImages(imageHash uint64) (*[]models.Image, error) {
+	dbObj := db.GetDb()
+	var images []models.Image
+	hashThreshold, err := strconv.Atoi(os.Getenv("PHASH_THRESHOLD"))
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Not sure if a raw SQL query is the right way to go but it works...
+	sqlQuery := fmt.Sprintf("SELECT images.* from images, image_data WHERE images.id = image_data.image_id AND bit_count(%d ^ image_data.image_hash) <= %d", imageHash, hashThreshold)
+	dbObj.Raw(sqlQuery).Find(&images)
+	return &images, nil
 }
