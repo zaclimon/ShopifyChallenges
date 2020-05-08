@@ -35,7 +35,10 @@ func IsValidImageExtension(fileName string) bool {
 	fileParts := strings.Split(fileName, ".")
 	if len(fileParts) >= 1 {
 		fileExtension := strings.ToLower(fileParts[len(fileParts)-1])
-		return fileExtension == "jpg" || fileExtension == "jpeg" || fileExtension == "png" || fileExtension == "gif"
+		return strings.EqualFold(fileExtension, "jpg") ||
+			strings.EqualFold(fileExtension, "jpeg") ||
+			strings.EqualFold(fileExtension, "png") ||
+			strings.EqualFold(fileExtension, "gif")
 	}
 	return false
 }
