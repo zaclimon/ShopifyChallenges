@@ -75,6 +75,13 @@ func initUploadProcess(c *gin.Context, userID string, dbObj *gorm.DB) (*models.U
 	}
 
 	user, err := models.GetUserById(userID, dbObj)
+
+	if err != nil {
+		// The user does not exist
+		showResponseError(c, http.StatusBadRequest, err)
+		return nil, nil, nil, err
+	}
+
 	files := form.File["images"]
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
