@@ -27,6 +27,7 @@ func (imageData *ImageData) BeforeCreate(scope *gorm.Scope) error {
 }
 
 // CreateImage makes an ImageData type based on a processed image.
+// It returns an ImageData type or an error if metadata could not be processed
 func CreateImageData(image image.Image) (*ImageData, error) {
 	hash, err := goimagehash.PerceptionHash(image)
 	if err != nil {

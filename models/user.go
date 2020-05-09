@@ -18,16 +18,16 @@ type User struct {
 	Images    []Image
 }
 
-// Error when a user does not exist in the database
+// Error when a user does not exist in the database.
 var DbUserNotFoundError = errors.New("The user does not exist")
 
-// Error when a user with a given email already exists
+// Error when a user with a given email already exists.
 var DbDuplicatedEmailError = errors.New("A user with this email already exists")
 
-// Error when credentials are not valid
+// Error when credentials are not valid.
 var InvalidCredentialsError = errors.New("The credentials entered are not valid")
 
-// Error when the password could not be hashed
+// Error when the password could not be hashed.
 var PasswordHashError = errors.New("An error happened while hashing the password")
 
 // BeforeCreate is a function called by Gorm for preliminary processing before inserting a new object in the database.
@@ -117,12 +117,14 @@ func isUserEmailExists(email string, dbObj *gorm.DB) bool {
 	return true
 }
 
+// isUserIdExists verifies if a user with the given id exists.
 func isUserIdExists(id string, dbObj *gorm.DB) bool {
 	var user User
 	dbObj.First(&user, "id = ?", id)
 	return user.ID != uuid.Nil
 }
 
+// validatePassword verifies if a password candidate corresponds to the password hash of the user.
 func validatePassword(passwordHash string, passwordCandidate string) bool {
 	return bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(passwordCandidate)) == nil
 }

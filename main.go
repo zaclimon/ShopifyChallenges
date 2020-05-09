@@ -21,6 +21,7 @@ func main() {
 }
 
 // verifyEnvironmentVariables checks environment variables has been set, and loads the local one if not.
+// It returns true if environment variables could be loaded.
 func verifyEnvironmentVariables() bool {
 	// The environment variables should already be defined in a container beforehand
 	dbHost := os.Getenv("DB_HOST")

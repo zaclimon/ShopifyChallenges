@@ -57,6 +57,7 @@ func Upload(c *gin.Context) {
 }
 
 // prepareUpload retrieves user information and initializes related libraries for processing an image upload.
+// It returns the user uploading the pictures, the Google Cloud bucket used for storing pictures and an error.
 func prepareUpload(c *gin.Context, userID string, dbObj *gorm.DB) (*models.User, *storage.BucketHandle, error) {
 	user, err := models.GetUserById(userID, dbObj)
 
@@ -81,6 +82,10 @@ func prepareUpload(c *gin.Context, userID string, dbObj *gorm.DB) (*models.User,
 }
 
 // processUpload handles the main processing of uploading files to Google Cloud Storage.
+// It returns an array of uploaded pictures, pictures that has not been uploaded and an error if something happened.
+//
+// Note: Two pictures cannot have the same filename in the repository. As such if one is tried to be uploaded, it will
+// not be uploaded.
 func processUpload(user *models.User, files []*multipart.FileHeader, bucket *storage.BucketHandle, dbObj *gorm.DB, c *gin.Context) ([]string, []string, error) {
 	imagesFolderName := os.Getenv("CLOUD_STORAGE_IMAGES_FOLDER")
 	uploadedFiles := make([]string, 0)
@@ -125,6 +130,7 @@ func processUpload(user *models.User, files []*multipart.FileHeader, bucket *sto
 }
 
 // createBucketUserFolder creates a new folder for the user inside the Google Cloud Storage bucket.
+// It returns an error if the folder could not be created.
 func createBucketUserFolder(userFolderHandle *storage.ObjectHandle) error {
 	folderWriter := userFolderHandle.NewWriter(context.Background())
 	_, err := folderWriter.Write(make([]byte, 0))
@@ -136,6 +142,7 @@ func createBucketUserFolder(userFolderHandle *storage.ObjectHandle) error {
 }
 
 // uploadToGoogleCloud uploads the file to the user's folder in Google Cloud Storage.
+// It returns an error if the file could not be uploaded to Google Cloud.
 func uploadToGoogleCloud(bucket *storage.BucketHandle, imagesFolderName string, userID string, fileName string) error {
 	uploadFolder := os.Getenv("UPLOAD_FOLDER")
 	imageObject := bucket.Object(fmt.Sprintf("%s/%s/%s", imagesFolderName, userID, fileName))

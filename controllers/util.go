@@ -19,6 +19,7 @@ func showResponseError(c *gin.Context, statusCode int, err error) {
 }
 
 // savedUploadedFile persists the file in the local filesystem for further processing.
+// It returns an error if the file could not be saved.
 func saveUploadedFile(fileInfo *multipart.FileHeader, c *gin.Context) error {
 	uploadFolder := os.Getenv("UPLOAD_FOLDER")
 	destinationPath := fmt.Sprintf("%s/%s", uploadFolder, fileInfo.Filename)
@@ -29,6 +30,7 @@ func saveUploadedFile(fileInfo *multipart.FileHeader, c *gin.Context) error {
 }
 
 // generateImageData creates image metadata that can be used for further processing.
+// It returns an error if the image could not be decoded or if it could not extract metadata from the image.
 func generateImageData(filePath string) (*models.ImageData, error) {
 	decodedImage, err := models.DecodeImage(filePath)
 
@@ -45,6 +47,7 @@ func generateImageData(filePath string) (*models.ImageData, error) {
 }
 
 // validateToken verifies the validity of a token when doing an authenticated request.
+// It returns an error if the token could not be parsed correctly.
 func validateToken(token string) (string, error) {
 	// Validate that the token is valid before continuing
 	parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
@@ -65,6 +68,7 @@ func validateToken(token string) (string, error) {
 }
 
 // getSimilarImages retrieves images that are "similar" based on a given image hash.
+// It returns an array of images that are "similar" alongside an error if the images could not be retrieved.
 func getSimilarImages(imageHash uint64) (*[]models.Image, error) {
 	dbObj := db.GetDb()
 	var images []models.Image

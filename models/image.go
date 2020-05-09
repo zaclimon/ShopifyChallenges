@@ -35,6 +35,7 @@ func (image *Image) BeforeCreate(scope *gorm.Scope) error {
 
 // IsValidImageExtension validates whether a file is considered an image. So far the file extensions considered to be
 // images are ".jpg/.jpeg", ".png", and ".gif".
+// It returns true if the file extension is valid.
 func IsValidImageExtension(fileName string) bool {
 	fileParts := strings.Split(fileName, ".")
 	if len(fileParts) >= 1 {
@@ -48,6 +49,7 @@ func IsValidImageExtension(fileName string) bool {
 }
 
 // IsUserImageExists validates whether a user has a given image.
+// It returns true if the user have an image with the given filename.
 func IsUserImageExists(userID string, fileName string, dbObj *gorm.DB) bool {
 	var image Image
 	dbObj.First(&image, "user_id = ? AND file_name = ?", userID, fileName)
@@ -67,6 +69,7 @@ func CreateImage(fileName string, size int64, imageData ImageData) *Image {
 }
 
 // DecodeImage decodes the image for further processing.
+// It returns a decoded image or an error if something happened during decoding.
 func DecodeImage(filePath string) (image.Image, error) {
 	imageReader, err := os.Open(filePath)
 	if err != nil {

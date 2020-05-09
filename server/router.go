@@ -6,6 +6,7 @@ import (
 )
 
 // UtsuruRouter registers the HTTP routes (endpoints) to a given function.
+// It returns the router for the application.
 func UtsuruRouter() *gin.Engine {
 	router := gin.Default()
 	router.POST("/register", controllers.Register)
