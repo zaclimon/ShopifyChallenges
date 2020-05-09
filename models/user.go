@@ -63,19 +63,16 @@ func CreateAndInsertNewUser(email string, password string, dbObj *gorm.DB) (*Use
 	return newUser, nil
 }
 
-// GetUserByEmail retrieves a user from the database based on its email, password, database object.
-func GetUserByEmail(email string, password string, dbObj *gorm.DB) (*User, error) {
-	if !isUserEmailExists(email, dbObj) {
-		return nil, DbUserNotFoundError
-	}
+// getUserByEmail retrieves a user from the database based on its email, password, database object.
+func getUserByEmail(email string, dbObj *gorm.DB) (*User, error) {
 	var user User
 	dbObj.First(&user, "email = ?", email)
 
-	if validatePassword(user.Password, password) {
-		return &user, nil
+	if user.Email == "" {
+		return nil, DbUserNotFoundError
 	}
 
-	return nil, InvalidCredentialsError
+	return &user, nil
 }
 
 // GetUserById retrieves a user from the database based on its id and database object.
@@ -86,6 +83,21 @@ func GetUserById(id string, dbObj *gorm.DB) (*User, error) {
 	var user User
 	dbObj.First(&user, "id = ?", id)
 	return &user, nil
+}
+
+// RetrieveUser retrieves a user if it has valid credentials (email and password)
+func RetrieveUser(email string, password string, dbObj *gorm.DB) (*User, error) {
+	user, err := getUserByEmail(email, dbObj)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if validatePassword(user.Password, password) {
+		return user, nil
+	}
+
+	return nil, InvalidCredentialsError
 }
 
 // hashPassword hashes the password of the user
@@ -99,9 +111,10 @@ func hashPassword(password string) (string, error) {
 
 // isUserEmailExists verifies a user with the given email exists.
 func isUserEmailExists(email string, dbObj *gorm.DB) bool {
-	var user User
-	dbObj.First(&user, "email = ?", email)
-	return user.Email != ""
+	if _, err := getUserByEmail(email, dbObj); err != nil {
+		return false
+	}
+	return true
 }
 
 func isUserIdExists(id string, dbObj *gorm.DB) bool {

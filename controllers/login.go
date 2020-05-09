@@ -29,7 +29,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	user, err := models.GetUserByEmail(jsonRequest.Email, jsonRequest.Password, dbObj)
+	user, err := models.RetrieveUser(jsonRequest.Email, jsonRequest.Password, dbObj)
 
 	if err != nil {
 		errorCode := http.StatusInternalServerError
