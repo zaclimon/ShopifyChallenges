@@ -15,11 +15,14 @@ import (
 	"os"
 )
 
+// UploadRequest handles upload information like the images to upload.
 type UploadRequest struct {
 	Token  string                  `form:"token" binding:"required"`
 	Images []*multipart.FileHeader `form:"images" binding:"required"`
 }
 
+// Upload uploads one or more images to Google Cloud and creates associated metadata entries in the database when using
+// the "/upload" endpoint.
 func Upload(c *gin.Context) {
 	var requestBody UploadRequest
 	if err := c.ShouldBindWith(&requestBody, binding.FormMultipart); err != nil {
@@ -34,13 +37,13 @@ func Upload(c *gin.Context) {
 	}
 
 	dbObj := db.GetDb()
-	user, bucket, err := initUploadProcess(c, userID, dbObj)
+	user, bucket, err := prepareUpload(c, userID, dbObj)
 	if err != nil {
-		// The body has been defined in initUploadProcess()
+		// The body has been defined in prepareUpload()
 		return
 	}
 
-	uploadedFiles, notUploadedFiles, err := uploadProcess(user, requestBody.Images, bucket, dbObj, c)
+	uploadedFiles, notUploadedFiles, err := processUpload(user, requestBody.Images, bucket, dbObj, c)
 	if err != nil {
 		showResponseError(c, http.StatusInternalServerError, err)
 		return
@@ -53,7 +56,8 @@ func Upload(c *gin.Context) {
 	})
 }
 
-func initUploadProcess(c *gin.Context, userID string, dbObj *gorm.DB) (*models.User, *storage.BucketHandle, error) {
+// prepareUpload retrieves user information and initializes related libraries for processing an image upload.
+func prepareUpload(c *gin.Context, userID string, dbObj *gorm.DB) (*models.User, *storage.BucketHandle, error) {
 	user, err := models.GetUserById(userID, dbObj)
 
 	if err != nil {
@@ -76,7 +80,8 @@ func initUploadProcess(c *gin.Context, userID string, dbObj *gorm.DB) (*models.U
 	return user, bucket, nil
 }
 
-func uploadProcess(user *models.User, files []*multipart.FileHeader, bucket *storage.BucketHandle, dbObj *gorm.DB, c *gin.Context) ([]string, []string, error) {
+// processUpload handles the main processing of uploading files to Google Cloud Storage.
+func processUpload(user *models.User, files []*multipart.FileHeader, bucket *storage.BucketHandle, dbObj *gorm.DB, c *gin.Context) ([]string, []string, error) {
 	imagesFolderName := os.Getenv("CLOUD_STORAGE_IMAGES_FOLDER")
 	uploadedFiles := make([]string, 0)
 	notUploadedFiles := make([]string, 0)
@@ -96,7 +101,7 @@ func uploadProcess(user *models.User, files []*multipart.FileHeader, bucket *sto
 				return nil, nil, err
 			}
 
-			if err := uploadToGCP(bucket, imagesFolderName, userID, fileInfo.Filename); err != nil {
+			if err := uploadToGoogleCloud(bucket, imagesFolderName, userID, fileInfo.Filename); err != nil {
 				return nil, nil, err
 			}
 
@@ -119,6 +124,7 @@ func uploadProcess(user *models.User, files []*multipart.FileHeader, bucket *sto
 	return uploadedFiles, notUploadedFiles, nil
 }
 
+// createBucketUserFolder creates a new folder for the user inside the Google Cloud Storage bucket.
 func createBucketUserFolder(userFolderHandle *storage.ObjectHandle) error {
 	folderWriter := userFolderHandle.NewWriter(context.Background())
 	_, err := folderWriter.Write(make([]byte, 0))
@@ -129,7 +135,8 @@ func createBucketUserFolder(userFolderHandle *storage.ObjectHandle) error {
 	return nil
 }
 
-func uploadToGCP(bucket *storage.BucketHandle, imagesFolderName string, userID string, fileName string) error {
+// uploadToGoogleCloud uploads the file to the user's folder in Google Cloud Storage.
+func uploadToGoogleCloud(bucket *storage.BucketHandle, imagesFolderName string, userID string, fileName string) error {
 	uploadFolder := os.Getenv("UPLOAD_FOLDER")
 	imageObject := bucket.Object(fmt.Sprintf("%s/%s/%s", imagesFolderName, userID, fileName))
 	storageWriter := imageObject.NewWriter(context.Background())

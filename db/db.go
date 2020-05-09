@@ -10,6 +10,7 @@ import (
 
 var dbObj *gorm.DB
 
+// Init initializes the database object.
 func Init() {
 	if dbObj == nil {
 		dbUser := os.Getenv("DB_USER")
@@ -32,6 +33,7 @@ func Init() {
 	}
 }
 
+// GetDB retrieves the database object after it has been initialized.
 func GetDb() *gorm.DB {
 	if dbObj != nil {
 		return dbObj
@@ -40,6 +42,7 @@ func GetDb() *gorm.DB {
 	return nil
 }
 
+// Stop closes the connection with the database.
 func Stop() {
 	if dbObj != nil {
 		defer dbObj.Close()

@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// User is a type that identifies a user for Utsuru.
 type User struct {
 	ID        uuid.UUID `gorm:"primary_key"`
 	Email     string    `gorm:"size:255;not null;unique"`
@@ -17,11 +18,19 @@ type User struct {
 	Images    []Image
 }
 
+// Error when a user does not exist in the database
 var DbUserNotFoundError = errors.New("The user does not exist")
+
+// Error when a user with a given email already exists
 var DbDuplicatedEmailError = errors.New("A user with this email already exists")
+
+// Error when credentials are not valid
 var InvalidCredentialsError = errors.New("The credentials entered are not valid")
+
+// Error when the password could not be hashed
 var PasswordHashError = errors.New("An error happened while hashing the password")
 
+// BeforeCreate is a function called by Gorm for preliminary processing before inserting a new object in the database.
 func (user *User) BeforeCreate(scope *gorm.Scope) error {
 	generatedUuid, err := uuid.NewRandom()
 	if err != nil {
@@ -32,6 +41,7 @@ func (user *User) BeforeCreate(scope *gorm.Scope) error {
 	return scope.SetColumn("ID", generatedUuid)
 }
 
+// CreateAndInsertNewUser creates a user type and inserts it on the database based on an email, password and database object.
 func CreateAndInsertNewUser(email string, password string, dbObj *gorm.DB) (*User, error) {
 	if isUserEmailExists(email, dbObj) {
 		return nil, DbDuplicatedEmailError
@@ -53,6 +63,7 @@ func CreateAndInsertNewUser(email string, password string, dbObj *gorm.DB) (*Use
 	return newUser, nil
 }
 
+// GetUserByEmail retrieves a user from the database based on its email, password, database object.
 func GetUserByEmail(email string, password string, dbObj *gorm.DB) (*User, error) {
 	if !isUserEmailExists(email, dbObj) {
 		return nil, DbUserNotFoundError
@@ -67,6 +78,7 @@ func GetUserByEmail(email string, password string, dbObj *gorm.DB) (*User, error
 	return nil, InvalidCredentialsError
 }
 
+// GetUserById retrieves a user from the database based on its id and database object.
 func GetUserById(id string, dbObj *gorm.DB) (*User, error) {
 	if !isUserIdExists(id, dbObj) {
 		return nil, DbUserNotFoundError
@@ -76,6 +88,7 @@ func GetUserById(id string, dbObj *gorm.DB) (*User, error) {
 	return &user, nil
 }
 
+// hashPassword hashes the password of the user
 func hashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -84,6 +97,7 @@ func hashPassword(password string) (string, error) {
 	return string(bytes), nil
 }
 
+// isUserEmailExists verifies a user with the given email exists.
 func isUserEmailExists(email string, dbObj *gorm.DB) bool {
 	var user User
 	dbObj.First(&user, "email = ?", email)

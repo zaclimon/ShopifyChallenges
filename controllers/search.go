@@ -10,11 +10,13 @@ import (
 	"os"
 )
 
+// SearchRequest handles information for the lookup of images based on a similar one.
 type SearchRequest struct {
 	Token string                `form:"token" binding:"required"`
 	Image *multipart.FileHeader `form:"image" binding:"required"`
 }
 
+// Search retrieves similar images from requests made on the "/search" endpoint.
 func Search(c *gin.Context) {
 	var requestBody SearchRequest
 	err := c.ShouldBindWith(&requestBody, binding.FormMultipart)

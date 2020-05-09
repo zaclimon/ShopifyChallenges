@@ -10,13 +10,13 @@ import (
 	"os"
 )
 
-// Type responsible for handling login information
-// such as the user's email and password
+// Type responsible for handling login information such as the user's email and password
 type LoginRequest struct {
 	Email    string `form:"user" json:"user" xml:"user" binding:"required,email"`
 	Password string `form:"user" json:"user" xml:"user" binding:"required,min=6"`
 }
 
+// Login a user when he/she goes through the "/login" endpoint
 func Login(c *gin.Context) {
 	var jsonRequest RegisterRequest
 	err := c.ShouldBindJSON(&jsonRequest)
@@ -38,9 +38,7 @@ func Login(c *gin.Context) {
 		} else if errors.Is(err, models.DbUserNotFoundError) {
 			errorCode = http.StatusNotFound
 		}
-		c.JSON(errorCode, gin.H{
-			"error": err.Error(),
-		})
+		showResponseError(c, errorCode, err)
 		return
 	}
 
@@ -52,9 +50,7 @@ func Login(c *gin.Context) {
 	tokenString, err := token.SignedString([]byte(jwtSecret))
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		showResponseError(c, http.StatusInternalServerError, err)
 		return
 	}
 

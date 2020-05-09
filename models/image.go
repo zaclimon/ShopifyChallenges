@@ -12,6 +12,7 @@ import (
 	"strings"
 )
 
+// Image is a type for identifying an image as a file
 type Image struct {
 	ID        uuid.UUID `gorm:"primary_key"`
 	FileName  string    `gorm:"not null"`
@@ -21,6 +22,7 @@ type Image struct {
 	ImageData ImageData `json:"-"`
 }
 
+// BeforeCreate is a function called by Gorm for preliminary processing before inserting a new object in the database.
 func (image *Image) BeforeCreate(scope *gorm.Scope) error {
 	generatedUuid, err := uuid.NewRandom()
 	if err != nil {
@@ -31,6 +33,8 @@ func (image *Image) BeforeCreate(scope *gorm.Scope) error {
 	return scope.SetColumn("ID", generatedUuid)
 }
 
+// IsValidImageExtension validates whether a file is considered an image. So far the file extensions considered to be
+// images are ".jpg/.jpeg", ".png", and ".gif".
 func IsValidImageExtension(fileName string) bool {
 	fileParts := strings.Split(fileName, ".")
 	if len(fileParts) >= 1 {
@@ -43,12 +47,14 @@ func IsValidImageExtension(fileName string) bool {
 	return false
 }
 
+// IsUserImageExists validates whether a user has a given image.
 func IsUserImageExists(userID string, fileName string, dbObj *gorm.DB) bool {
 	var image Image
 	dbObj.First(&image, "user_id = ? AND file_name = ?", userID, fileName)
 	return image.FileName != ""
 }
 
+// CreateImage makes an Image type based on the filename, size and metadata of a given image file.
 func CreateImage(fileName string, size int64, imageData ImageData) *Image {
 
 	image := &Image{
@@ -60,6 +66,7 @@ func CreateImage(fileName string, size int64, imageData ImageData) *Image {
 	return image
 }
 
+// DecodeImage decodes the image for further processing.
 func DecodeImage(filePath string) (image.Image, error) {
 	imageReader, err := os.Open(filePath)
 	if err != nil {

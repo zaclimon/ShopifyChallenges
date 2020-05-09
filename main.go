@@ -9,6 +9,7 @@ import (
 	"os"
 )
 
+// main starts the server and runs the application.
 func main() {
 	if verifyEnvironmentVariables() {
 		db.Init()
@@ -19,6 +20,7 @@ func main() {
 	}
 }
 
+// verifyEnvironmentVariables checks environment variables has been set, and loads the local one if not.
 func verifyEnvironmentVariables() bool {
 	// The environment variables should already be defined in a container beforehand
 	dbHost := os.Getenv("DB_HOST")
