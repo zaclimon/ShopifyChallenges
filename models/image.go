@@ -58,7 +58,6 @@ func IsUserImageExists(userID string, fileName string, dbObj *gorm.DB) bool {
 
 // CreateImage makes an Image type based on the filename, size and metadata of a given image file.
 func CreateImage(fileName string, size int64, imageData ImageData) *Image {
-
 	image := &Image{
 		FileName:  fileName,
 		Size:      size,

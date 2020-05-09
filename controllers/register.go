@@ -20,9 +20,7 @@ func Register(c *gin.Context) {
 	err := c.ShouldBindJSON(&jsonRequest)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		showResponseError(c, http.StatusBadRequest, err)
 		return
 	}
 
@@ -33,9 +31,7 @@ func Register(c *gin.Context) {
 		if errors.Is(err, models.DbDuplicatedEmailError) {
 			errorCode = http.StatusOK
 		}
-		c.JSON(errorCode, gin.H{
-			"error": err.Error(),
-		})
+		showResponseError(c, errorCode, err)
 		return
 	}
 

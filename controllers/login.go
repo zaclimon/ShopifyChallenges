@@ -23,9 +23,7 @@ func Login(c *gin.Context) {
 	dbObj := db.GetDb()
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		showResponseError(c, http.StatusBadRequest, err)
 		return
 	}
 
@@ -57,5 +55,4 @@ func Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"token": tokenString,
 	})
-
 }
