@@ -1,8 +1,8 @@
 package main
 
 import (
-	"UtsuruConcept/server"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"UtsuruConcept/controllers"
+	"UtsuruConcept/models"
 	"github.com/joho/godotenv"
 	"log"
 	"os"
@@ -11,7 +11,7 @@ import (
 // main starts the server and runs the application.
 func main() {
 	if verifyEnvironmentVariables() {
-		server.Init()
+		Init()
 	} else {
 		log.Fatal("Cannot run without environment variables!")
 	}
@@ -30,4 +30,17 @@ func verifyEnvironmentVariables() bool {
 		}
 	}
 	return true
+}
+
+// Init initializes the server routes.
+func Init() {
+	db, err := models.InitDB()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	router := controllers.UtsuruRouter(db)
+	if err = router.Run(); err != nil {
+		log.Fatal(err)
+	}
 }
