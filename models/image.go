@@ -50,9 +50,9 @@ func IsValidImageExtension(fileName string) bool {
 
 // IsUserImageExists validates whether a user has a given image.
 // It returns true if the user have an image with the given filename.
-func IsUserImageExists(userID string, fileName string, dbObj *gorm.DB) bool {
+func (db *DB) IsUserImageExists(userID string, fileName string) bool {
 	var image Image
-	dbObj.First(&image, "user_id = ? AND file_name = ?", userID, fileName)
+	db.First(&image, "user_id = ? AND file_name = ?", userID, fileName)
 	return image.FileName != ""
 }
 

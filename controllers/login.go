@@ -1,9 +1,7 @@
 package controllers
 
 import (
-	"UtsuruConcept/db"
 	"UtsuruConcept/models"
-	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -17,26 +15,24 @@ type LoginRequest struct {
 }
 
 // Login a user when he/she goes through the "/login" endpoint
-func Login(c *gin.Context) {
+func (env *Env) Login(c *gin.Context) {
 	var jsonRequest RegisterRequest
 	err := c.ShouldBindJSON(&jsonRequest)
-	dbObj := db.GetDb()
 
 	if err != nil {
 		showResponseError(c, http.StatusBadRequest, err)
 		return
 	}
 
-	user, err := models.RetrieveUser(jsonRequest.Email, jsonRequest.Password, dbObj)
+	user, err := env.db.GetUserByEmail(jsonRequest.Email)
 
 	if err != nil {
-		errorCode := http.StatusInternalServerError
-		if errors.Is(err, models.InvalidCredentialsError) {
-			errorCode = http.StatusForbidden
-		} else if errors.Is(err, models.DbUserNotFoundError) {
-			errorCode = http.StatusNotFound
-		}
-		showResponseError(c, errorCode, err)
+		showResponseError(c, http.StatusNotFound, err)
+		return
+	}
+
+	if err = models.ValidatePassword(user.Password, jsonRequest.Password); err != nil {
+		showResponseError(c, http.StatusForbidden, err)
 		return
 	}
 

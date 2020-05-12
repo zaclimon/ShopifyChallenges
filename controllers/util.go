@@ -1,14 +1,11 @@
 package controllers
 
 import (
-	"UtsuruConcept/db"
-	"UtsuruConcept/models"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"mime/multipart"
 	"os"
-	"strconv"
 )
 
 // showResponseError writes to the response body the error retrieved when executing functions
@@ -27,23 +24,6 @@ func saveUploadedFile(fileInfo *multipart.FileHeader, c *gin.Context) error {
 		return err
 	}
 	return nil
-}
-
-// generateImageData creates image metadata that can be used for further processing.
-// It returns an error if the image could not be decoded or if it could not extract metadata from the image.
-func generateImageData(filePath string) (*models.ImageData, error) {
-	decodedImage, err := models.DecodeImage(filePath)
-
-	if err != nil {
-		return nil, err
-	}
-
-	imageData, err := models.CreateImageData(decodedImage)
-	if err != nil {
-		return nil, err
-	}
-
-	return imageData, nil
 }
 
 // validateToken verifies the validity of a token when doing an authenticated request.
@@ -65,21 +45,4 @@ func validateToken(token string) (string, error) {
 	}
 
 	return "", err
-}
-
-// getSimilarImages retrieves images that are "similar" based on a given image hash.
-// It returns an array of images that are "similar" alongside an error if the images could not be retrieved.
-func getSimilarImages(imageHash uint64) (*[]models.Image, error) {
-	dbObj := db.GetDb()
-	var images []models.Image
-	hashThreshold, err := strconv.Atoi(os.Getenv("PHASH_THRESHOLD"))
-
-	if err != nil {
-		return nil, err
-	}
-
-	// Not sure if a raw SQL query is the right way to go but it works...
-	sqlQuery := fmt.Sprintf("SELECT images.* from images, image_data WHERE images.id = image_data.image_id AND bit_count(%d ^ image_data.image_hash) <= %d", imageHash, hashThreshold)
-	dbObj.Raw(sqlQuery).Find(&images)
-	return &images, nil
 }

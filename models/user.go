@@ -41,63 +41,40 @@ func (user *User) BeforeCreate(scope *gorm.Scope) error {
 	return scope.SetColumn("ID", generatedUuid)
 }
 
-// CreateAndInsertNewUser creates a user type and inserts it on the database based on an email, password and database object.
-func CreateAndInsertNewUser(email string, password string, dbObj *gorm.DB) (*User, error) {
-	if isUserEmailExists(email, dbObj) {
-		return nil, DbDuplicatedEmailError
+func (db *DB) InsertOrUpdateUser(user *User) error {
+	if err := db.Save(&user).Error; err != nil {
+		return err
 	}
+	return nil
+}
 
+func CreateNewUser(email string, password string) (*User, error) {
 	hashedPassword, err := hashPassword(password)
-
 	if err != nil {
 		return nil, err
 	}
-
 	newUser := &User{
-		ID:       uuid.New(),
 		Email:    email,
 		Password: hashedPassword,
 	}
-
-	dbObj.Create(&newUser)
 	return newUser, nil
 }
 
-// getUserByEmail retrieves a user from the database based on its email, password, database object.
-func getUserByEmail(email string, dbObj *gorm.DB) (*User, error) {
+// GetUserByEmail retrieves a user from the database based on its email and password
+func (db *DB) GetUserByEmail(email string) (*User, error) {
 	var user User
-	dbObj.First(&user, "email = ?", email)
-
+	db.First(&user, "email = ?", email)
 	if user.Email == "" {
 		return nil, DbUserNotFoundError
 	}
-
 	return &user, nil
 }
 
 // GetUserById retrieves a user from the database based on its id and database object.
-func GetUserById(id string, dbObj *gorm.DB) (*User, error) {
-	if !isUserIdExists(id, dbObj) {
-		return nil, DbUserNotFoundError
-	}
+func (db *DB) GetUserById(userID string) (*User, error) {
 	var user User
-	dbObj.First(&user, "id = ?", id)
+	db.First(&user, "id = ?", userID)
 	return &user, nil
-}
-
-// RetrieveUser retrieves a user if it has valid credentials (email and password)
-func RetrieveUser(email string, password string, dbObj *gorm.DB) (*User, error) {
-	user, err := getUserByEmail(email, dbObj)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if validatePassword(user.Password, password) {
-		return user, nil
-	}
-
-	return nil, InvalidCredentialsError
 }
 
 // hashPassword hashes the password of the user
@@ -110,21 +87,22 @@ func hashPassword(password string) (string, error) {
 }
 
 // isUserEmailExists verifies a user with the given email exists.
-func isUserEmailExists(email string, dbObj *gorm.DB) bool {
-	if _, err := getUserByEmail(email, dbObj); err != nil {
+func (db *DB) IsUserEmailExists(email string) bool {
+	if _, err := db.GetUserByEmail(email); err != nil {
 		return false
 	}
 	return true
 }
 
 // isUserIdExists verifies if a user with the given id exists.
-func isUserIdExists(id string, dbObj *gorm.DB) bool {
-	var user User
-	dbObj.First(&user, "id = ?", id)
-	return user.ID != uuid.Nil
+func (db *DB) IsUserIdExists(id string) bool {
+	if _, err := db.GetUserById(id); err != nil {
+		return false
+	}
+	return true
 }
 
 // validatePassword verifies if a password candidate corresponds to the password hash of the user.
-func validatePassword(passwordHash string, passwordCandidate string) bool {
-	return bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(passwordCandidate)) == nil
+func ValidatePassword(passwordHash string, passwordCandidate string) error {
+	return bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(passwordCandidate))
 }

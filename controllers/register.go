@@ -1,9 +1,7 @@
 package controllers
 
 import (
-	"UtsuruConcept/db"
 	"UtsuruConcept/models"
-	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -15,7 +13,7 @@ type RegisterRequest struct {
 }
 
 // Registers a new user through the image repository using the "/register" endpoint.
-func Register(c *gin.Context) {
+func (env *Env) Register(c *gin.Context) {
 	var jsonRequest RegisterRequest
 	err := c.ShouldBindJSON(&jsonRequest)
 
@@ -24,14 +22,14 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	_, err = models.CreateAndInsertNewUser(jsonRequest.Email, jsonRequest.Password, db.GetDb())
-
+	user, err := models.CreateNewUser(jsonRequest.Email, jsonRequest.Password)
 	if err != nil {
-		errorCode := http.StatusInternalServerError
-		if errors.Is(err, models.DbDuplicatedEmailError) {
-			errorCode = http.StatusOK
-		}
-		showResponseError(c, errorCode, err)
+		showResponseError(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	if err = env.db.InsertOrUpdateUser(user); err != nil {
+		showResponseError(c, http.StatusConflict, err)
 		return
 	}
 

@@ -17,7 +17,7 @@ type SearchRequest struct {
 }
 
 // Search retrieves similar images from requests made on the "/search" endpoint.
-func Search(c *gin.Context) {
+func (env *Env) Search(c *gin.Context) {
 	var requestBody SearchRequest
 	err := c.ShouldBindWith(&requestBody, binding.FormMultipart)
 
@@ -43,14 +43,21 @@ func Search(c *gin.Context) {
 		}
 
 		defer os.Remove(imagePath)
-		imageData, err := generateImageData(requestBody.Image.Filename)
+		processedImage, err := models.DecodeImage(imagePath)
 
 		if err != nil {
 			showResponseError(c, http.StatusInternalServerError, err)
 			return
 		}
 
-		similarImages, err := getSimilarImages(imageData.ImageHash)
+		imageData, err := models.CreateImageData(processedImage)
+
+		if err != nil {
+			showResponseError(c, http.StatusInternalServerError, err)
+			return
+		}
+
+		similarImages, err := env.db.GetSimilarImages(imageData.ImageHash)
 
 		if err != nil {
 			showResponseError(c, http.StatusInternalServerError, err)

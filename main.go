@@ -1,7 +1,6 @@
 package main
 
 import (
-	"UtsuruConcept/db"
 	"UtsuruConcept/server"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/joho/godotenv"
@@ -12,9 +11,7 @@ import (
 // main starts the server and runs the application.
 func main() {
 	if verifyEnvironmentVariables() {
-		db.Init()
 		server.Init()
-		db.Stop()
 	} else {
 		log.Fatal("Cannot run without environment variables!")
 	}

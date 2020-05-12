@@ -1,14 +1,12 @@
 package controllers
 
 import (
-	"UtsuruConcept/db"
 	"UtsuruConcept/models"
 	"cloud.google.com/go/storage"
 	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
-	"github.com/jinzhu/gorm"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -23,7 +21,7 @@ type UploadRequest struct {
 
 // Upload uploads one or more images to Google Cloud and creates associated metadata entries in the database when using
 // the "/upload" endpoint.
-func Upload(c *gin.Context) {
+func (env *Env) Upload(c *gin.Context) {
 	var requestBody UploadRequest
 	if err := c.ShouldBindWith(&requestBody, binding.FormMultipart); err != nil {
 		showResponseError(c, http.StatusBadRequest, err)
@@ -35,21 +33,30 @@ func Upload(c *gin.Context) {
 		showResponseError(c, http.StatusBadRequest, err)
 		return
 	}
+	user, err := env.db.GetUserById(userID)
 
-	dbObj := db.GetDb()
-	user, bucket, err := prepareUpload(c, userID, dbObj)
+	if err != nil {
+		showResponseError(c, http.StatusBadRequest, err)
+		return
+	}
+
+	bucket, err := prepareUpload(c)
 	if err != nil {
 		// The body has been defined in prepareUpload()
 		return
 	}
 
-	uploadedFiles, notUploadedFiles, err := processUpload(user, requestBody.Images, bucket, dbObj, c)
+	uploadedFiles, notUploadedFiles, err := processUpload(user, requestBody.Images, bucket, env, c)
 	if err != nil {
 		showResponseError(c, http.StatusInternalServerError, err)
 		return
 	}
 
-	dbObj.Save(&user)
+	if err = env.db.InsertOrUpdateUser(user); err != nil {
+		showResponseError(c, http.StatusInternalServerError, err)
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"uploaded_files":     uploadedFiles,
 		"not_uploaded_files": notUploadedFiles,
@@ -58,27 +65,19 @@ func Upload(c *gin.Context) {
 
 // prepareUpload retrieves user information and initializes related libraries for processing an image upload.
 // It returns the user uploading the pictures, the Google Cloud bucket used for storing pictures and an error.
-func prepareUpload(c *gin.Context, userID string, dbObj *gorm.DB) (*models.User, *storage.BucketHandle, error) {
-	user, err := models.GetUserById(userID, dbObj)
-
-	if err != nil {
-		// The user does not exist
-		showResponseError(c, http.StatusBadRequest, err)
-		return nil, nil, err
-	}
-
+func prepareUpload(c *gin.Context) (*storage.BucketHandle, error) {
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 
 	if err != nil {
 		// The client has not been configured correctly
 		showResponseError(c, http.StatusInternalServerError, err)
-		return nil, nil, err
+		return nil, err
 	}
 
 	bucketName := os.Getenv("CLOUD_STORAGE_BUCKET_NAME")
 	bucket := client.Bucket(bucketName)
-	return user, bucket, nil
+	return bucket, nil
 }
 
 // processUpload handles the main processing of uploading files to Google Cloud Storage.
@@ -86,14 +85,14 @@ func prepareUpload(c *gin.Context, userID string, dbObj *gorm.DB) (*models.User,
 //
 // Note: Two pictures cannot have the same filename in the repository. As such if one is tried to be uploaded, it will
 // not be uploaded.
-func processUpload(user *models.User, files []*multipart.FileHeader, bucket *storage.BucketHandle, dbObj *gorm.DB, c *gin.Context) ([]string, []string, error) {
+func processUpload(user *models.User, files []*multipart.FileHeader, bucket *storage.BucketHandle, env *Env, c *gin.Context) ([]string, []string, error) {
 	imagesFolderName := os.Getenv("CLOUD_STORAGE_IMAGES_FOLDER")
 	uploadedFiles := make([]string, 0)
 	notUploadedFiles := make([]string, 0)
 	for _, fileInfo := range files {
 		userID := user.ID.String()
 
-		if models.IsValidImageExtension(fileInfo.Filename) && !models.IsUserImageExists(userID, fileInfo.Filename, dbObj) {
+		if models.IsValidImageExtension(fileInfo.Filename) && !env.db.IsUserImageExists(userID, fileInfo.Filename) {
 			userFolder := bucket.Object(fmt.Sprintf("%s/%s/", imagesFolderName, userID))
 			ctx := context.Background()
 			if _, err := userFolder.Attrs(ctx); err != nil {
@@ -112,7 +111,7 @@ func processUpload(user *models.User, files []*multipart.FileHeader, bucket *sto
 
 			uploadFolder := os.Getenv("UPLOAD_FOLDER")
 			imagePath := fmt.Sprintf("%s/%s", uploadFolder, fileInfo.Filename)
-			imageData, err := generateImageData(imagePath)
+			imageData, err := models.GenerateImageData(imagePath)
 			_ = os.Remove(imagePath)
 
 			if err != nil {
