@@ -32,7 +32,7 @@ func (env *Env) Login(c *gin.Context) {
 	}
 
 	if err = models.ValidatePassword(user.Password, jsonRequest.Password); err != nil {
-		showResponseError(c, http.StatusForbidden, err)
+		showResponseError(c, http.StatusForbidden, models.InvalidCredentialsError)
 		return
 	}
 
