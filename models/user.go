@@ -74,6 +74,9 @@ func (db *DB) GetUserByEmail(email string) (*User, error) {
 func (db *DB) GetUserById(userID string) (*User, error) {
 	var user User
 	db.First(&user, "id = ?", userID)
+	if user.ID == uuid.Nil {
+		return nil, DbUserNotFoundError
+	}
 	return &user, nil
 }
 
