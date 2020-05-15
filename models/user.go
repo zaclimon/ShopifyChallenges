@@ -60,7 +60,6 @@ func CreateNewUser(email string, password string) (*User, error) {
 	return newUser, nil
 }
 
-// GetUserByEmail retrieves a user from the database based on its email and password
 func (db *DB) GetUserByEmail(email string) (*User, error) {
 	var user User
 	db.First(&user, "email = ?", email)
@@ -70,7 +69,6 @@ func (db *DB) GetUserByEmail(email string) (*User, error) {
 	return &user, nil
 }
 
-// GetUserById retrieves a user from the database based on its id and database object.
 func (db *DB) GetUserById(userID string) (*User, error) {
 	var user User
 	db.First(&user, "id = ?", userID)
@@ -80,7 +78,6 @@ func (db *DB) GetUserById(userID string) (*User, error) {
 	return &user, nil
 }
 
-// hashPassword hashes the password of the user
 func hashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -89,7 +86,6 @@ func hashPassword(password string) (string, error) {
 	return string(bytes), nil
 }
 
-// isUserEmailExists verifies a user with the given email exists.
 func (db *DB) IsUserEmailExists(email string) bool {
 	if _, err := db.GetUserByEmail(email); err != nil {
 		return false
@@ -97,7 +93,6 @@ func (db *DB) IsUserEmailExists(email string) bool {
 	return true
 }
 
-// isUserIdExists verifies if a user with the given id exists.
 func (db *DB) IsUserIdExists(id string) bool {
 	if _, err := db.GetUserById(id); err != nil {
 		return false
@@ -105,7 +100,6 @@ func (db *DB) IsUserIdExists(id string) bool {
 	return true
 }
 
-// validatePassword verifies if a password candidate corresponds to the password hash of the user.
 func ValidatePassword(passwordHash string, passwordCandidate string) error {
 	return bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(passwordCandidate))
 }
