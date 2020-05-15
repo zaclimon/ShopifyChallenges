@@ -46,7 +46,7 @@ func TestGetUserByEmail(t *testing.T) {
 	})
 }
 
-func TestIsUserEmailValid(t *testing.T) {
+func TestIsUserEmailExists(t *testing.T) {
 	dbType, mock, rows := initMocks()
 	userID, _ := uuid.Parse("47ff6ccc-5bed-4e9a-8b0f-3ea995c7ac3a")
 	userEmail := "test@test.com"
@@ -111,4 +111,38 @@ func TestGetUserById(t *testing.T) {
 			t.Error("Could retrieve a user based on its ID")
 		}
 	})
+}
+
+func TestIsUserIdExists(t *testing.T) {
+	dbType, mock, rows := initMocks()
+	userID, _ := uuid.Parse("47ff6ccc-5bed-4e9a-8b0f-3ea995c7ac3a")
+	userEmail := "test@test.com"
+	userPassword := "abc123"
+	rows.AddRow(userID, userEmail, userPassword, time.Now())
+
+	t.Run("User exists", func(t *testing.T) {
+		mock.ExpectQuery("SELECT").WithArgs(userID).WillReturnRows(rows)
+		if !dbType.IsUserIdExists(userID.String()) {
+			t.Error("Could not retrieve valid user correctly with mock")
+		}
+	})
+
+	t.Run("User does not exist", func(t *testing.T) {
+		id, _ := uuid.Parse("47ff6ccc-5bed-4e9a-8b0f-3ea995c7ac3b")
+		if dbType.IsUserIdExists(id.String()) {
+			t.Error("Could retrieve a user based on a unregistered email.")
+		}
+	})
+}
+
+func TestValidatePassword(t *testing.T) {
+	password := "test1234"
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		t.Error("Could not hash the password")
+	}
+
+	if err = models.ValidatePassword(string(hashedPassword), password); err != nil {
+		t.Error("Could not validate the password")
+	}
 }
