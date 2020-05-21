@@ -49,6 +49,6 @@ func (env *Env) Login(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"token": tokenString,
+		"access_token": tokenString,
 	})
 }

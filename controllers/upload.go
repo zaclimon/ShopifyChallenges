@@ -15,8 +15,8 @@ import (
 
 // UploadRequest handles upload information like the images to upload.
 type UploadRequest struct {
-	Token  string                  `form:"token" binding:"required"`
-	Images []*multipart.FileHeader `form:"images" binding:"required"`
+	AccessToken 	string                  `form:"access_token" binding:"required"`
+	Images      	[]*multipart.FileHeader `form:"images" binding:"required"`
 }
 
 // Upload uploads one or more images to Google Cloud and creates associated metadata entries in the database when using
@@ -28,7 +28,7 @@ func (env *Env) Upload(c *gin.Context) {
 		return
 	}
 
-	userID, err := validateToken(requestBody.Token)
+	userID, err := validateToken(requestBody.AccessToken)
 	if err != nil {
 		showResponseError(c, http.StatusBadRequest, err)
 		return
