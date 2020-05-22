@@ -15,6 +15,7 @@ This document describes the various architecture aspects as well as some choices
   - [Potential Bottlenecks and Future Considerations](#potential-bottlenecks-and-future-considerations)
     - [Synchronous Operations](#synchronous-operations)
     - [Limitations of MySQL](#limitations-of-mysql)
+    - [Private Sharing of Pictures](#private-sharing-of-pictures)
 
 ## High-Level Overview
 
@@ -53,7 +54,7 @@ Below are diagrams explaining the flow of the interaction between components in 
 
 ![Registration Flow](./docs/images/Utsuru_Concept_Registration_Login_Search.png)
 
-1. The user sends it's credentials to the service using the `/api/v1/register` endpoint.
+1. The user sends its credentials to the service using the `/api/v1/register` endpoint.
 2. The server will then verify against the database if the email exists.
 3. If it doesn't exist then, a new user is created and it's password is hashed and saved into the database
 4. The client receives confirmation or denial of the user's registration
@@ -62,7 +63,7 @@ Below are diagrams explaining the flow of the interaction between components in 
 
 ![Login Flow](./docs/images/Utsuru_Concept_Registration_Login_Search.png)
 
-1. The user sends it's credentials to the service using the `/api/v1/login` endpoint.
+1. The user sends its credentials to the service using the `/api/v1/login` endpoint.
 2. The server will then verify against the database if the email and the hashed password belongs to a registered user.
 3. If the information is valid, a JWT token is generated
 4. This token is then returned to the user and he/she must use it for all subsequent requests to the repository
@@ -98,7 +99,7 @@ The image above represents the data entities used for Utsuru Concept as well as 
 
 ## Project Structure
 
-Due to the open structure of Go, there aren't many guidelines on how to set the structure for one. As such, the project is based on this [template](https://github.com/vsouza/go-gin-boilerplate). Here is the base structure for Utsuru Concept:
+Due to the open structure of Go, there aren't many guidelines on how to set the directories for a project. As such, the project is based on this [template](https://github.com/vsouza/go-gin-boilerplate). Here is the base structure for Utsuru Concept:
 
 ```
 UtsuruConcept/
@@ -125,12 +126,12 @@ UtsuruConcept/
     user_test.go
 ```
 
-- `models` represent the objects that are to be mapped between the application and the database
+- `models` represent the objects that are to be mapped between the application and the database.
 - `mocks` represent the dependencies (for example the database) that have been mocked so it is easier isolate components while testing.
-- `controllers` represents the endpoints for the application
+- `controllers` represents the endpoints for the application.
 - `testing` represents the list of tests used for this validating the features of the application.
 
-I agree, for a simple use-case it might be a little over the board to consider these patterns. However, as more features get added to an application, it definitely gets more rewarding to structure the application in a way that enables more flexibility and easier testability.
+For a simple use-case it might be a little over the board to consider these patterns. However, as more features get added to an application, it definitely gets more rewarding to structure the application in a way that enables more flexibility and easier testability.
 
 ## Potential Bottlenecks and Future Considerations
 
@@ -154,3 +155,12 @@ Several solutions could be considered for this situation:
 - Use a tool that is primarily aimed at searching like a [search engine](https://www.elastic.co/app-search/). Issues include usage of a new technology that might not be totally situed for the current usage, thus including more developing time. Also adds complexity to the current technology stack.
 
 - [Optimize](https://stackoverflow.com/a/35069581¼) the SQL queries for image retrieval and potentially use an index to only consider the hashes "close" enough to the wanted picture. This could be a good solution depending on the current situation and growth of the application that is also cost-effective.
+
+### Private Sharing of Pictures
+
+Ideally in a photo repository, a user might want to upload his/her pictures without it being available to everybody. In that case, the bucket would be secured so that external acces must not be permitted. However, it should still be possible for the user to see its own picture. In that case, a [Signed URL or a Signed Cookie](https://cloud.google.com/cdn/docs/private-content) can be considered.
+
+- A Signed URL would be used in cases where access is restricted to individual files (Installation executable for example)
+- A Signed Cookie would be used where access to multiple files at a time is required.
+
+Creating multiple Signed URLs will take time if several files are used. Furthermore, since they expire after a certain given period of time, a signed cookie might be a better solution. With that said, using them require a [content delivery network (CDN)](https://en.wikipedia.org/wiki/Content_delivery_network) to be configured.
