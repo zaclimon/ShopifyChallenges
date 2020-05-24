@@ -15,8 +15,8 @@ import (
 
 // UploadRequest handles upload information like the images to upload.
 type UploadRequest struct {
-	AccessToken 	string                  `form:"access_token" binding:"required"`
-	Images      	[]*multipart.FileHeader `form:"images" binding:"required"`
+	AccessToken string                  `form:"access_token" binding:"required"`
+	Images      []*multipart.FileHeader `form:"images" binding:"required"`
 }
 
 // Upload uploads one or more images to Google Cloud and creates associated metadata entries in the database when using
@@ -109,6 +109,12 @@ func processUpload(user *models.User, files []*multipart.FileHeader, bucket *sto
 				return nil, nil, err
 			}
 
+			imageUrl, err := generateImageUrl(bucket, imagesFolderName, userID, fileInfo.Filename)
+
+			if err != nil {
+				return nil, nil, err
+			}
+
 			uploadFolder := os.Getenv("UPLOAD_FOLDER")
 			imagePath := fmt.Sprintf("%s/%s", uploadFolder, fileInfo.Filename)
 			imageData, err := models.GenerateImageData(imagePath)
@@ -119,6 +125,7 @@ func processUpload(user *models.User, files []*multipart.FileHeader, bucket *sto
 			}
 
 			imageModel := models.CreateImage(fileInfo.Filename, fileInfo.Size, *imageData)
+			imageModel.Url = imageUrl
 			user.Images = append(user.Images, *imageModel)
 			uploadedFiles = append(uploadedFiles, fileInfo.Filename)
 		} else {
@@ -145,15 +152,38 @@ func createBucketUserFolder(userFolderHandle *storage.ObjectHandle) error {
 func uploadToGoogleCloud(bucket *storage.BucketHandle, imagesFolderName string, userID string, fileName string) error {
 	uploadFolder := os.Getenv("UPLOAD_FOLDER")
 	imageObject := bucket.Object(fmt.Sprintf("%s/%s/%s", imagesFolderName, userID, fileName))
+
 	storageWriter := imageObject.NewWriter(context.Background())
 	savedFileReader, err := os.Open(fmt.Sprintf("%s/%s", uploadFolder, fileName))
+
 	if err != nil {
 		return err
 	}
+
 	if _, err = io.Copy(storageWriter, savedFileReader); err != nil {
 		return err
 	}
+
 	defer storageWriter.Close()
 	defer savedFileReader.Close()
 	return nil
+}
+
+// generateImageUrl sets an uploaded file as public and returns its url or an error.
+func generateImageUrl(bucket *storage.BucketHandle, imagesFolderName string, userID string, fileName string) (string, error) {
+	imageObject := bucket.Object(fmt.Sprintf("%s/%s/%s", imagesFolderName, userID, fileName))
+	imageAcl := imageObject.ACL()
+
+	// Set image as public
+	ctx := context.Background()
+	if err := imageAcl.Set(ctx, storage.AllUsers, storage.RoleReader); err != nil {
+		return "", err
+	}
+
+	imageAttrs, err := imageObject.Attrs(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	return imageAttrs.MediaLink, nil
 }
