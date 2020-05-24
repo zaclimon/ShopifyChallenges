@@ -33,7 +33,7 @@ func (env *Env) Upload(c *gin.Context) {
 		showResponseError(c, http.StatusBadRequest, err)
 		return
 	}
-	user, err := env.db.GetUserById(userID)
+	user, err := env.Db.GetUserById(userID)
 
 	if err != nil {
 		showResponseError(c, http.StatusBadRequest, err)
@@ -52,7 +52,7 @@ func (env *Env) Upload(c *gin.Context) {
 		return
 	}
 
-	if err = env.db.InsertOrUpdateUser(user); err != nil {
+	if err = env.Db.InsertOrUpdateUser(user); err != nil {
 		showResponseError(c, http.StatusInternalServerError, err)
 		return
 	}
@@ -92,7 +92,7 @@ func processUpload(user *models.User, files []*multipart.FileHeader, bucket *sto
 	for _, fileInfo := range files {
 		userID := user.ID.String()
 
-		if models.IsValidImageExtension(fileInfo.Filename) && !env.db.IsUserImageExists(userID, fileInfo.Filename) {
+		if models.IsValidImageExtension(fileInfo.Filename) && !env.Db.IsUserImageExists(userID, fileInfo.Filename) {
 			userFolder := bucket.Object(fmt.Sprintf("%s/%s/", imagesFolderName, userID))
 			ctx := context.Background()
 			if _, err := userFolder.Attrs(ctx); err != nil {

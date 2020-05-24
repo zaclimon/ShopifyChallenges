@@ -2,24 +2,14 @@ package testing
 
 import (
 	"UtsuruConcept/models"
-	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/uuid"
-	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
 	"testing"
 	"time"
 )
 
-func initMocks() (*models.DB, sqlmock.Sqlmock, *sqlmock.Rows) {
-	sqlmockDb, mock, _ := sqlmock.New()
-	gormDb, _ := gorm.Open("mysql", sqlmockDb)
-	dbType := &models.DB{DB: gormDb}
-	rows := mock.NewRows([]string{"id", "email", "password", "created_at"})
-	return dbType, mock, rows
-}
-
 func TestGetUserByEmail(t *testing.T) {
-	dbType, mock, rows := initMocks()
+	dbType, mock, rows := createDbMocks()
 	userID, _ := uuid.Parse("47ff6ccc-5bed-4e9a-8b0f-3ea995c7ac3a")
 	userEmail := "test@test.com"
 	userPassword := "abc123"
@@ -47,7 +37,7 @@ func TestGetUserByEmail(t *testing.T) {
 }
 
 func TestIsUserEmailExists(t *testing.T) {
-	dbType, mock, rows := initMocks()
+	dbType, mock, rows := createDbMocks()
 	userID, _ := uuid.Parse("47ff6ccc-5bed-4e9a-8b0f-3ea995c7ac3a")
 	userEmail := "test@test.com"
 	userPassword := "abc123"
@@ -86,7 +76,7 @@ func TestCreateNewUser(t *testing.T) {
 }
 
 func TestGetUserById(t *testing.T) {
-	dbType, mock, rows := initMocks()
+	dbType, mock, rows := createDbMocks()
 	userID, _ := uuid.Parse("47ff6ccc-5bed-4e9a-8b0f-3ea995c7ac3a")
 	userEmail := "test@test.com"
 	userPassword := "abc123"
@@ -114,7 +104,7 @@ func TestGetUserById(t *testing.T) {
 }
 
 func TestIsUserIdExists(t *testing.T) {
-	dbType, mock, rows := initMocks()
+	dbType, mock, rows := createDbMocks()
 	userID, _ := uuid.Parse("47ff6ccc-5bed-4e9a-8b0f-3ea995c7ac3a")
 	userEmail := "test@test.com"
 	userPassword := "abc123"

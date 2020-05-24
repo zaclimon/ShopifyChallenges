@@ -24,7 +24,7 @@ func (env *Env) Login(c *gin.Context) {
 		return
 	}
 
-	user, err := env.db.GetUserByEmail(jsonRequest.Email)
+	user, err := env.Db.GetUserByEmail(jsonRequest.Email)
 
 	if err != nil {
 		showResponseError(c, http.StatusNotFound, err)

@@ -16,8 +16,8 @@ import (
 )
 
 func TestRegisterEndpoint(t *testing.T) {
-	dbType, mock, rows := initMocks()
-	router := controllers.UtsuruRouter(dbType)
+	dbType, mock, rows := createDbMocks()
+	router := controllers.UtsuruRouter(createEnv(dbType))
 	endpoint := "/api/v1/register"
 
 	t.Run("Valid credentials", func(t *testing.T) {

@@ -12,8 +12,8 @@ import (
 
 // SearchRequest handles information for the lookup of images based on a similar one.
 type SearchRequest struct {
-	AccessToken 	string                `form:"access_token" binding:"required"`
-	Image       	*multipart.FileHeader `form:"image" binding:"required"`
+	AccessToken string                `form:"access_token" binding:"required"`
+	Image       *multipart.FileHeader `form:"image" binding:"required"`
 }
 
 // Search retrieves similar images from requests made on the "/search" endpoint.
@@ -57,7 +57,7 @@ func (env *Env) Search(c *gin.Context) {
 			return
 		}
 
-		similarImages, err := env.db.GetSimilarImages(imageData.ImageHash)
+		similarImages, err := env.Db.GetSimilarImages(imageData.ImageHash)
 
 		if err != nil {
 			showResponseError(c, http.StatusInternalServerError, err)

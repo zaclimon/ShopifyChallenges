@@ -39,7 +39,11 @@ func Init() {
 		log.Fatal(err)
 	}
 
-	router := controllers.UtsuruRouter(db)
+	env := &controllers.Env{
+		Db:   db,
+		Mode: controllers.ServerMode,
+	}
+	router := controllers.UtsuruRouter(env)
 	if err = router.Run(); err != nil {
 		log.Fatal(err)
 	}

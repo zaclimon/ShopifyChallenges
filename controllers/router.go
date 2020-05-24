@@ -3,19 +3,31 @@ package controllers
 import (
 	"UtsuruConcept/models"
 	"github.com/gin-gonic/gin"
+	"io/ioutil"
 )
 
 type Env struct {
-	db models.UtsuruDataStore
+	Db   models.UtsuruDataStore
+	Mode string
 }
+
+const (
+	// Test mode defines the router while running tests
+	TestMode = "Test"
+	// Server Mode defines the router when running Gin as a server
+	ServerMode = "Server"
+)
 
 // UtsuruRouter registers the HTTP routes (endpoints) to a given function.
 // It returns the router for the application.
-func UtsuruRouter(db *models.DB) *gin.Engine {
+func UtsuruRouter(env *Env) *gin.Engine {
 
-	env := &Env{db}
+	if env.Mode == TestMode {
+		gin.DefaultWriter = ioutil.Discard
+	}
 
 	router := gin.Default()
+
 	api := router.Group("api")
 	{
 		v1 := api.Group("v1")

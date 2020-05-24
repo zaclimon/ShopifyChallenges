@@ -24,8 +24,8 @@ func TestLoginEndpoint(t *testing.T) {
 	}
 
 	t.Run("Valid credentials", func(t *testing.T) {
-		dbType, mock, rows := initMocks()
-		router := controllers.UtsuruRouter(dbType)
+		dbType, mock, rows := createDbMocks()
+		router := controllers.UtsuruRouter(createEnv(dbType))
 		recorder := httptest.NewRecorder()
 
 		userID, _ := uuid.Parse("47ff6ccc-5bed-4e9a-8b0f-3ea995c7ac3a")
@@ -47,8 +47,8 @@ func TestLoginEndpoint(t *testing.T) {
 	})
 
 	t.Run("Invalid email input", func(t *testing.T) {
-		dbType, mock, _ := initMocks()
-		router := controllers.UtsuruRouter(dbType)
+		dbType, mock, _ := createDbMocks()
+		router := controllers.UtsuruRouter(createEnv(dbType))
 		recorder := httptest.NewRecorder()
 
 		userEmail := "testblah"
@@ -71,8 +71,8 @@ func TestLoginEndpoint(t *testing.T) {
 	})
 
 	t.Run("Unregistered email", func(t *testing.T) {
-		dbType, mock, rows := initMocks()
-		router := controllers.UtsuruRouter(dbType)
+		dbType, mock, rows := createDbMocks()
+		router := controllers.UtsuruRouter(createEnv(dbType))
 		recorder := httptest.NewRecorder()
 
 		userEmail := "test2@test.com"
@@ -95,8 +95,8 @@ func TestLoginEndpoint(t *testing.T) {
 	})
 
 	t.Run("Invalid password", func(t *testing.T) {
-		dbType, mock, rows := initMocks()
-		router := controllers.UtsuruRouter(dbType)
+		dbType, mock, rows := createDbMocks()
+		router := controllers.UtsuruRouter(createEnv(dbType))
 		recorder := httptest.NewRecorder()
 
 		userID, _ := uuid.Parse("47ff6ccc-5bed-4e9a-8b0f-3ea995c7ac3b")
@@ -124,8 +124,8 @@ func TestLoginEndpoint(t *testing.T) {
 	})
 
 	t.Run("Fields that are not 'username' or 'password", func(t *testing.T) {
-		dbType, _, _ := initMocks()
-		router := controllers.UtsuruRouter(dbType)
+		dbType, _, _ := createDbMocks()
+		router := controllers.UtsuruRouter(createEnv(dbType))
 		recorder := httptest.NewRecorder()
 
 		userEmail := "test@test.com"

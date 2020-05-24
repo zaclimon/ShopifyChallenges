@@ -28,7 +28,7 @@ func (env *Env) Register(c *gin.Context) {
 		return
 	}
 
-	if err = env.db.InsertOrUpdateUser(user); err != nil {
+	if err = env.Db.InsertOrUpdateUser(user); err != nil {
 		showResponseError(c, http.StatusConflict, models.DbDuplicatedEmailError)
 		return
 	}
