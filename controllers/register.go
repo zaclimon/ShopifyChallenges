@@ -8,8 +8,8 @@ import (
 
 // Type responsible for handling login information such as the user's email and password
 type RegisterRequest struct {
-	Email    string `form:"email" json:"email" xml:"email" binding:"required,email"`
-	Password string `form:"password" json:"password" xml:"password" binding:"required,min=6"`
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required,min=6"`
 }
 
 // Registers a new user through the image repository using the "/register" endpoint.

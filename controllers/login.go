@@ -10,8 +10,8 @@ import (
 
 // Type responsible for handling login information such as the user's email and password
 type LoginRequest struct {
-	Email    string `form:"user" json:"user" xml:"user" binding:"required,email"`
-	Password string `form:"user" json:"user" xml:"user" binding:"required,min=6"`
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required,min=6"`
 }
 
 // Login a user when he/she goes through the "/login" endpoint
