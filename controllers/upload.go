@@ -187,3 +187,10 @@ func generateImageUrl(bucket *storage.BucketHandle, imagesFolderName string, use
 
 	return imageAttrs.MediaLink, nil
 }
+
+// showResponseError writes to the response body the error retrieved when executing functions
+func showResponseError(c *gin.Context, statusCode int, err error) {
+	c.JSON(statusCode, gin.H{
+		"error": err.Error(),
+	})
+}

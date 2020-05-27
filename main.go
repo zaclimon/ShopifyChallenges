@@ -3,6 +3,7 @@ package main
 import (
 	"UtsuruConcept/controllers"
 	"UtsuruConcept/models"
+	"UtsuruConcept/storage"
 	"github.com/joho/godotenv"
 	"log"
 	"os"
@@ -35,6 +36,11 @@ func verifyEnvironmentVariables() bool {
 // Init initializes the server routes.
 func Init() {
 	db, err := models.InitDB()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	gcs, err := storage.InitStorage()
 	if err != nil {
 		log.Fatal(err)
 	}
