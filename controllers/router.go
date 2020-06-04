@@ -13,7 +13,7 @@ import (
 
 type Env struct {
 	Db   models.UtsuruDataStore
-	gcs  storage.UtsuruFileStorage
+	Gcs  storage.UtsuruFileStorage
 	Mode string
 }
 

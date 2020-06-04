@@ -47,6 +47,7 @@ func Init() {
 
 	env := &controllers.Env{
 		Db:   db,
+		Gcs:  gcs,
 		Mode: controllers.ServerMode,
 	}
 	router := controllers.UtsuruRouter(env)
