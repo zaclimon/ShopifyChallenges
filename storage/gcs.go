@@ -63,12 +63,11 @@ func (gcs *Gcs) CreateUserFolder(userID string) error {
 func (gcs *Gcs) UploadToProvider(userID string, fileName string) error {
 	bucketName := os.Getenv("CLOUD_STORAGE_BUCKET_NAME")
 	imagesFolderName := os.Getenv("CLOUD_STORAGE_IMAGES_FOLDER")
-	uploadFolder := os.Getenv("UPLOAD_FOLDER")
 	bucket := gcs.Bucket(bucketName)
 	imageObject := bucket.Object(fmt.Sprintf("%s/%s/%s", imagesFolderName, userID, fileName))
 
 	storageWriter := imageObject.NewWriter(context.Background())
-	savedFileReader, err := os.Open(fmt.Sprintf("%s/%s", uploadFolder, fileName))
+	savedFileReader, err := os.Open(fmt.Sprintf("%s/%s", os.TempDir(), fileName))
 
 	if err != nil {
 		return err

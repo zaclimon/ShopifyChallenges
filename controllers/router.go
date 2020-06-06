@@ -51,8 +51,7 @@ func UtsuruRouter(env *Env) *gin.Engine {
 // savedUploadedFile persists the file in the local filesystem for further processing.
 // It returns an error if the file could not be saved.
 func saveUploadedFile(fileInfo *multipart.FileHeader, c *gin.Context) error {
-	uploadFolder := os.Getenv("UPLOAD_FOLDER")
-	destinationPath := fmt.Sprintf("%s/%s", uploadFolder, fileInfo.Filename)
+	destinationPath := fmt.Sprintf("%s/%s", os.TempDir(), fileInfo.Filename)
 	if err := c.SaveUploadedFile(fileInfo, destinationPath); err != nil {
 		return err
 	}

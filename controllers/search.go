@@ -34,8 +34,7 @@ func (env *Env) Search(c *gin.Context) {
 	}
 
 	if models.IsValidImageExtension(requestBody.Image.Filename) {
-		uploadFolder := os.Getenv("UPLOAD_FOLDER")
-		imagePath := fmt.Sprintf("%s/%s", uploadFolder, requestBody.Image.Filename)
+		imagePath := fmt.Sprintf("%s/%s", os.TempDir(), requestBody.Image.Filename)
 
 		if err = c.SaveUploadedFile(requestBody.Image, imagePath); err != nil {
 			showResponseError(c, http.StatusInternalServerError, err)

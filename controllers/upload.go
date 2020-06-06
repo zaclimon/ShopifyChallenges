@@ -72,23 +72,27 @@ func processUpload(user *models.User, files []*multipart.FileHeader, env *Env, c
 				}
 			}
 
+			fmt.Println("Saving file locally")
 			if err := saveUploadedFile(fileInfo, c); err != nil {
 				return nil, nil, err
 			}
 
+			fmt.Println("Saving file to provider")
 			if err := env.Gcs.UploadToProvider(userID, fileInfo.Filename); err != nil {
 				return nil, nil, err
 			}
 
+			fmt.Println("Generating image URL")
 			imageUrl, err := env.Gcs.GenerateImageURL(userID, fileInfo.Filename)
 
 			if err != nil {
 				return nil, nil, err
 			}
 
-			uploadFolder := os.Getenv("UPLOAD_FOLDER")
-			imagePath := fmt.Sprintf("%s/%s", uploadFolder, fileInfo.Filename)
+			imagePath := fmt.Sprintf("%s/%s", os.TempDir(), fileInfo.Filename)
 			imageData, err := models.GenerateImageData(imagePath)
+
+			fmt.Println("Deleting local image")
 			_ = os.Remove(imagePath)
 
 			if err != nil {
