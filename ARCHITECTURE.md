@@ -15,7 +15,7 @@ This document describes the various architecture aspects as well as some choices
   - [Potential Bottlenecks and Future Considerations](#potential-bottlenecks-and-future-considerations)
     - [Synchronous Operations](#synchronous-operations)
     - [Limitations of MySQL](#limitations-of-mysql)
-    - [Private Sharing of Pictures](#private-sharing-of-pictures)
+    - [Handling of Private Pictures](#handling-of-private-pictures)
 
 ## High-Level Overview
 
@@ -84,9 +84,9 @@ Below are diagrams explaining the flow of the interaction between components in 
 ![Search Flow](./docs/images/Utsuru_Concept_Registration_Login_Search.png)
 
 1. The user sends his/her image to the `/api/v1/search` endpoint. The server then computes the perceptual hash of this image
-2. The server requests the metadata from all the images from the database
-3. The database sends the metadata from all the images back to the server
-4. The server then compare the hash of the uploaded image against all the images and sends back all the images that are similar to the user.
+2. The server sends the metadata of the uploaded image to be compared against the database
+3. The database returns images that has similar hashes back to the server
+4. The server sends back all those images back to the user.
 
 ## Data Entities
 
@@ -109,26 +109,40 @@ UtsuruConcept/
     router.go
     search.go
     upload.go
-    util.go
+  docs/
+    images/
+      Utsuru_Concept_Erd.png
+      Utsuru_Concept_Erd.drawio
+      Utsuru_Concept_Registration_Login_Search.png
+      Utsuru_Concept_Registration_Login_Search.drawio
+      Utsuru_Concept_Upload.png
+      Utsuru_Concept_Upload.drawio
   mocks/
     mock_db.go  
+    mock_gcs.go
   models/
     db.go
     user.go
     image.go
     imagedata.go
+  storage/
+    gcs.go
   testing/
     files/
       test_picture.jpg
       test_text.txt
+    components.go
     image_test.go
     imagedata_test.go
+    login_test.go
+    register_test.go
     user_test.go
 ```
 
-- `models` represent the objects that are to be mapped between the application and the database.
-- `mocks` represent the dependencies (for example the database) that have been mocked so it is easier isolate components while testing.
+- `models` represents the objects that are to be mapped between the application and the database.
+- `mocks` represents the dependencies (for example the database) that have been mocked so it is easier isolate components while testing.
 - `controllers` represents the endpoints for the application.
+- `storage` represents the data storage components of the application.
 - `testing` represents the list of tests used for this validating the features of the application.
 
 For a simple use-case it might be a little over the board to consider these patterns. However, as more features get added to an application, it definitely gets more rewarding to structure the application in a way that enables more flexibility and easier testability.
@@ -156,7 +170,7 @@ Several solutions could be considered for this situation:
 
 - [Optimize](https://stackoverflow.com/a/35069581¼) the SQL queries for image retrieval and potentially use an index to only consider the hashes "close" enough to the wanted picture. This could be a good solution depending on the current situation and growth of the application that is also cost-effective.
 
-### Private Sharing of Pictures
+### Handling of Private Pictures
 
 Ideally in a photo repository, a user might want to upload his/her pictures without it being available to everybody. In that case, the bucket would be secured so that external acces must not be permitted. However, it should still be possible for the user to see its own picture. In that case, a [Signed URL or a Signed Cookie](https://cloud.google.com/cdn/docs/private-content) can be considered.
 
