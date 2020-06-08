@@ -46,7 +46,7 @@ Concept means that it is a proof-of-concept and that it may or may not be used f
 
 ## Endpoints
 
-All endpoints are to be used with a `POST` request method. As such, you could use a solution like [Postman](https://www.getpostman.com/) to try your solution.
+All endpoints are to be used with a `POST` request method. As such, you could use a solution like [Postman](https://www.getpostman.com/) to try your solution. Doing a normal request to the server returns an "Hello World" message.
 
 - `/api/v1/register` To register a user it's body is a JSON composed of two fields which are `email` and `password`.
 - `/api/v1/login` To authenticate a user it's body is a JSON composed of two fields which are `email` and `password`. It will return an `access_token` field containing the token which should be used for all further requests

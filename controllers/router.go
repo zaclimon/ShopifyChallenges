@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"mime/multipart"
+	"net/http"
 	"os"
 )
 
@@ -33,6 +34,9 @@ func UtsuruRouter(env *Env) *gin.Engine {
 	}
 
 	router := gin.Default()
+	router.GET("/", func(context *gin.Context) {
+		context.String(http.StatusOK, "Hello world!")
+	})
 
 	api := router.Group("api")
 	{
