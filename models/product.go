@@ -9,7 +9,7 @@ type Product struct {
 	Description string `json:"description" binding:"required"`
 }
 
-type ProductDaoImpl struct {
+type productDaoImpl struct {
 	dbObj *gorm.DB
 }
 
@@ -21,7 +21,7 @@ type ProductDao interface {
 
 var pDao ProductDao
 
-func (pd *ProductDaoImpl) Insert(product *Product) error {
+func (pd *productDaoImpl) Insert(product *Product) error {
 	result := pd.dbObj.Create(&product)
 	if result.Error != nil {
 		return result.Error
@@ -29,7 +29,7 @@ func (pd *ProductDaoImpl) Insert(product *Product) error {
 	return nil
 }
 
-func (pd *ProductDaoImpl) Get(name string) (*Product, error) {
+func (pd *productDaoImpl) Get(name string) (*Product, error) {
 	var product Product
 	result := pd.dbObj.Where("name = ?", name).First(&product)
 
@@ -40,7 +40,7 @@ func (pd *ProductDaoImpl) Get(name string) (*Product, error) {
 	return &product, nil
 }
 
-func (pd *ProductDaoImpl) GetAll() ([]Product, error) {
+func (pd *productDaoImpl) GetAll() ([]Product, error) {
 	var products []Product
 	result := pd.dbObj.Find(&products)
 
@@ -52,7 +52,7 @@ func (pd *ProductDaoImpl) GetAll() ([]Product, error) {
 }
 
 func ConfigureProductDao(db *gorm.DB) {
-	pDao = &ProductDaoImpl{db}
+	pDao = &productDaoImpl{db}
 }
 
 func GetProductDao() ProductDao {
