@@ -15,7 +15,8 @@ type productDaoImpl struct {
 
 type ProductDao interface {
 	Insert(product *Product) error
-	Get(name string) (*Product, error)
+	GetById(id int) (*Product, error)
+	GetByName(name string) (*Product, error)
 	GetAll() ([]Product, error)
 }
 
@@ -29,7 +30,18 @@ func (pd *productDaoImpl) Insert(product *Product) error {
 	return nil
 }
 
-func (pd *productDaoImpl) Get(name string) (*Product, error) {
+func (pd *productDaoImpl) GetById(id int) (*Product, error) {
+	var product Product
+	result := pd.dbObj.First(&product, id)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &product, nil
+}
+
+func (pd *productDaoImpl) GetByName(name string) (*Product, error) {
 	var product Product
 	result := pd.dbObj.Where("name = ?", name).First(&product)
 

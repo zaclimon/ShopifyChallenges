@@ -5,11 +5,13 @@ import (
 	"gorm.io/gorm"
 	"net/http"
 	"souko/models"
+	"strconv"
 )
 
 func configureRouter() *gin.Engine {
 	r := gin.Default()
-	r.POST("/product", createProductHandler)
+	r.GET("/products/:id", getProductHandler)
+	r.POST("/products", createProductHandler)
 	return r
 }
 
@@ -18,22 +20,43 @@ func createProductHandler(c *gin.Context) {
 	productDao := models.GetProductDao()
 
 	err := c.ShouldBindJSON(&product)
-	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+	if validateError(c, http.StatusBadRequest, err) {
 		return
 	}
 
-	_, err = productDao.Get(product.Name)
+	product, err = productDao.GetByName(product.Name)
 	if err != nil && err != gorm.ErrRecordNotFound {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}
 
 	err = productDao.Insert(product)
-	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+	if validateError(c, http.StatusInternalServerError, err) {
 		return
 	}
 
 	c.JSON(http.StatusOK, product)
+}
+
+func getProductHandler(c *gin.Context) {
+	productDao := models.GetProductDao()
+	id, err := strconv.Atoi(c.Param("id"))
+	if validateError(c, http.StatusBadRequest, err) {
+		return
+	}
+
+	product, err := productDao.GetById(id)
+	if validateError(c, http.StatusBadRequest, err) {
+		return
+	}
+
+	c.JSON(http.StatusOK, product)
+}
+
+func validateError(c *gin.Context, statusCode int, err error) bool {
+	if err != nil {
+		c.JSON(statusCode, gin.H{"error": err})
+		return true
+	}
+	return false
 }
