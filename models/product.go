@@ -4,7 +4,7 @@ import "gorm.io/gorm"
 
 type Product struct {
 	gorm.Model
-	Name        string `json:"name" binding:"required"`
+	Name        string `json:"name" binding:"required" gorm:"unique"`
 	Brand       string `json:"brand" binding:"required"`
 	Description string `json:"description" binding:"required"`
 }

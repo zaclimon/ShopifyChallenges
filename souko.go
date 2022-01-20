@@ -2,6 +2,7 @@ package souko
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/mattn/go-sqlite3"
 	"gorm.io/gorm"
 	"net/http"
 	"souko/models"
@@ -24,14 +25,19 @@ func createProductHandler(c *gin.Context) {
 		return
 	}
 
-	product, err = productDao.GetByName(product.Name)
+	_, err = productDao.GetByName(product.Name)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}
 
 	err = productDao.Insert(product)
-	if validateError(c, http.StatusInternalServerError, err) {
+	if sqliteErr, ok := err.(sqlite3.Error); ok {
+		if sqliteErr.ExtendedCode == sqlite3.ErrConstraintUnique {
+			c.JSON(http.StatusConflict, gin.H{"error": "This product already exists"})
+			return
+		}
+	} else if validateError(c, http.StatusInternalServerError, err) {
 		return
 	}
 

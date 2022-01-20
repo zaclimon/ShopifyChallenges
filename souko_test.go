@@ -19,7 +19,7 @@ func TestCreateProduct(t *testing.T) {
 	defer dbObj.Close()
 	defer ts.Close()
 
-	req, _ := http.NewRequest(http.MethodPost, "/product", bytes.NewBuffer(productJsonStr))
+	req, _ := http.NewRequest(http.MethodPost, "/products", bytes.NewBuffer(productJsonStr))
 	req.Header.Set("Content-Type", "application/json")
 	res := httptest.NewRecorder()
 
@@ -37,7 +37,7 @@ func TestCreateProduct(t *testing.T) {
 		err := json.NewDecoder(res.Body).Decode(&decodedProduct)
 
 		if err != nil || decodedProduct.Name != productJson.Name {
-			t.Errorf("Error while comparing product")
+			t.Errorf("Error while comparing products in request")
 		}
 	})
 
@@ -47,6 +47,15 @@ func TestCreateProduct(t *testing.T) {
 
 		if dbProduct == nil {
 			t.Errorf("The product created in the server and the one in the database aren't the same")
+		}
+	})
+
+	t.Run("Same product should not be created twice", func(t *testing.T) {
+		req, _ = http.NewRequest(http.MethodPost, "/products", bytes.NewBuffer(productJsonStr))
+		res = httptest.NewRecorder()
+		router.ServeHTTP(res, req)
+		if res.Code != http.StatusConflict {
+			t.Errorf("Product conflict should have been detected, but code %v received instead", res.Code)
 		}
 	})
 }
