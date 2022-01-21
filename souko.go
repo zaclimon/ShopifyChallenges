@@ -34,12 +34,7 @@ func createProductHandler(c *gin.Context) {
 	}
 
 	err = productDao.Insert(product)
-	if sqliteErr, ok := err.(sqlite3.Error); ok {
-		if sqliteErr.ExtendedCode == sqlite3.ErrConstraintUnique {
-			c.JSON(http.StatusConflict, gin.H{"error": "This product already exists"})
-			return
-		}
-	} else if validateError(c, http.StatusInternalServerError, err) {
+	if validateError(c, http.StatusInternalServerError, err) {
 		return
 	}
 
@@ -91,7 +86,13 @@ func modifyProductHandler(c *gin.Context) {
 
 func validateError(c *gin.Context, statusCode int, err error) bool {
 	if err != nil {
-		c.JSON(statusCode, gin.H{"error": err})
+		if sqliteErr, ok := err.(sqlite3.Error); ok {
+			if sqliteErr.ExtendedCode == sqlite3.ErrConstraintUnique {
+				c.JSON(http.StatusConflict, gin.H{"error": "This product already exists"})
+			}
+		} else {
+			c.JSON(statusCode, gin.H{"error": err})
+		}
 		return true
 	}
 	return false

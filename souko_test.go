@@ -84,6 +84,13 @@ func TestModifyProduct(t *testing.T) {
 	if tempProduct.Name != newProduct.Name {
 		t.Errorf("Updated product is not the same from memory and HTTP request")
 	}
+
+	t.Run("Modify one product to the same name as another one", func(t *testing.T) {
+		res = executeHttpRequest(t, router, http.MethodPut, "/products/2", newProductJsonStr)
+		if res.Code != http.StatusConflict {
+			t.Errorf("Expecting product duplicate, while error code is: %v instead", res.Code)
+		}
+	})
 }
 
 func configureBaseComponents(t *testing.T) (*gin.Engine, *sql.DB) {
