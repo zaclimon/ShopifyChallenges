@@ -91,3 +91,38 @@ func TestReadProduct(t *testing.T) {
 		}
 	})
 }
+
+func TestModifyProduct(t *testing.T) {
+	router := configureRouter()
+	db := ConfigureDatabase()
+	dbObj, _ := db.DB()
+	ts := httptest.NewServer(router)
+	defer dbObj.Close()
+	defer ts.Close()
+
+	productDao := models.GetProductDao()
+	product := &models.Product{
+		Name:        "Pixel 6 Pro",
+		Brand:       "Google",
+		Description: "The most intelligent smartphone",
+	}
+
+	productDao.Insert(product)
+	newProductJsonStr := []byte(`{"name": "iPhone 12 Pro Max", "brand": "Apple", "description": "The most popular smartphone"}`)
+
+	var tempProduct *models.Product
+	var newProduct *models.Product
+	req, _ := http.NewRequest(http.MethodPut, "/products/1", bytes.NewReader(newProductJsonStr))
+	res := httptest.NewRecorder()
+	router.ServeHTTP(res, req)
+	_ = json.NewDecoder(bytes.NewReader(newProductJsonStr)).Decode(&tempProduct)
+	err := json.NewDecoder(res.Body).Decode(&newProduct)
+
+	if err != nil {
+		t.Errorf("Error while decoding JSON")
+	}
+
+	if tempProduct.Name != newProduct.Name {
+		t.Errorf("Updated product is not the same from memory and HTTP request")
+	}
+}

@@ -18,6 +18,7 @@ type ProductDao interface {
 	GetById(id int) (*Product, error)
 	GetByName(name string) (*Product, error)
 	GetAll() ([]Product, error)
+	Update(id int, newProduct *Product) (*Product, error)
 }
 
 var pDao ProductDao
@@ -61,6 +62,30 @@ func (pd *productDaoImpl) GetAll() ([]Product, error) {
 	}
 
 	return products, nil
+}
+
+func (pd *productDaoImpl) Update(productId int, newProduct *Product) (*Product, error) {
+	var currentProduct Product
+	pd.dbObj.Find(&currentProduct, productId)
+
+	if newProduct.Name != "" {
+		currentProduct.Name = newProduct.Name
+	}
+
+	if newProduct.Brand != "" {
+		currentProduct.Brand = newProduct.Brand
+	}
+
+	if newProduct.Description != "" {
+		currentProduct.Description = newProduct.Description
+	}
+
+	result := pd.dbObj.Save(&currentProduct)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &currentProduct, nil
 }
 
 func ConfigureProductDao(db *gorm.DB) {

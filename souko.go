@@ -1,6 +1,7 @@
 package souko
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/mattn/go-sqlite3"
 	"gorm.io/gorm"
@@ -11,8 +12,9 @@ import (
 
 func configureRouter() *gin.Engine {
 	r := gin.Default()
-	r.GET("/products/:id", getProductHandler)
 	r.POST("/products", createProductHandler)
+	r.GET("/products/:id", getProductHandler)
+	r.PUT("/products/:id", modifyProductHandler)
 	return r
 }
 
@@ -57,6 +59,34 @@ func getProductHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, product)
+}
+
+func modifyProductHandler(c *gin.Context) {
+	productDao := models.GetProductDao()
+	id, err := strconv.Atoi(c.Param("id"))
+	if validateError(c, http.StatusBadRequest, err) {
+		return
+	}
+	_, err = productDao.GetById(id)
+
+	if err != nil && err == gorm.ErrRecordNotFound {
+		errorStr := fmt.Sprintf("Product with id %v doesn't exist", id)
+		c.JSON(http.StatusNotFound, gin.H{"error": errorStr})
+		return
+	}
+
+	var tempProduct *models.Product
+	err = c.ShouldBindJSON(&tempProduct)
+	if validateError(c, http.StatusBadRequest, err) {
+		return
+	}
+
+	updatedProduct, err := productDao.Update(id, tempProduct)
+	if validateError(c, http.StatusInternalServerError, err) {
+		return
+	}
+
+	c.JSON(http.StatusOK, updatedProduct)
 }
 
 func validateError(c *gin.Context, statusCode int, err error) bool {
