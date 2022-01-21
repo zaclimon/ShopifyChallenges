@@ -79,9 +79,7 @@ func TestReadProduct(t *testing.T) {
 
 	t.Run("Search by ID", func(t *testing.T) {
 		var tempProduct *models.Product
-		idSearchJson := `{ "id": 1 }`
-		req, _ := http.NewRequest(http.MethodGet, "/products/1", bytes.NewBuffer([]byte(idSearchJson)))
-		req.Header.Set("Content-Type", "application/json")
+		req, _ := http.NewRequest(http.MethodGet, "/products/1", nil)
 		res := httptest.NewRecorder()
 		router.ServeHTTP(res, req)
 		err := json.NewDecoder(res.Body).Decode(&tempProduct)
