@@ -38,7 +38,6 @@ func (pd *productDaoImpl) GetById(id int) (*Product, error) {
 	if result.Error != nil {
 		return nil, result.Error
 	}
-
 	return &product, nil
 }
 
@@ -49,7 +48,6 @@ func (pd *productDaoImpl) GetByName(name string) (*Product, error) {
 	if result.Error != nil {
 		return nil, result.Error
 	}
-
 	return &product, nil
 }
 
@@ -60,7 +58,6 @@ func (pd *productDaoImpl) GetAll() ([]Product, error) {
 	if result.Error != nil {
 		return nil, result.Error
 	}
-
 	return products, nil
 }
 
