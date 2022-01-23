@@ -29,12 +29,14 @@ func createProductHandler(c *gin.Context) {
 	}
 
 	_, err = productDao.GetByName(product.Name)
+
 	if err != nil && err != gorm.ErrRecordNotFound {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}
 
 	err = productDao.Insert(product)
+
 	if validateError(c, http.StatusInternalServerError, err) {
 		return
 	}
@@ -45,11 +47,13 @@ func createProductHandler(c *gin.Context) {
 func getProductHandler(c *gin.Context) {
 	productDao := models.GetProductDao()
 	id, err := strconv.Atoi(c.Param("id"))
+
 	if validateError(c, http.StatusBadRequest, err) {
 		return
 	}
 
 	product, err := productDao.GetById(id)
+
 	if validateError(c, http.StatusBadRequest, err) {
 		return
 	}
@@ -60,9 +64,11 @@ func getProductHandler(c *gin.Context) {
 func modifyProductHandler(c *gin.Context) {
 	productDao := models.GetProductDao()
 	id, err := strconv.Atoi(c.Param("id"))
+
 	if validateError(c, http.StatusBadRequest, err) {
 		return
 	}
+
 	_, err = productDao.GetById(id)
 
 	if err != nil && err == gorm.ErrRecordNotFound {
@@ -73,6 +79,7 @@ func modifyProductHandler(c *gin.Context) {
 
 	var tempProduct *models.Product
 	err = c.ShouldBindJSON(&tempProduct)
+
 	if validateError(c, http.StatusBadRequest, err) {
 		return
 	}
@@ -88,11 +95,13 @@ func modifyProductHandler(c *gin.Context) {
 func deleteProductHandler(c *gin.Context) {
 	productDao := models.GetProductDao()
 	id, err := strconv.Atoi(c.Param("id"))
+
 	if validateError(c, http.StatusBadRequest, err) {
 		return
 	}
 
 	err = productDao.Delete(id)
+
 	if err != nil && err != gorm.ErrRecordNotFound {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 	} else if validateError(c, http.StatusInternalServerError, err) {

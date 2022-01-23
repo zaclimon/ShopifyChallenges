@@ -17,6 +17,7 @@ func TestCreateProduct(t *testing.T) {
 	defer db.Close()
 
 	var productJson models.Product
+
 	productJsonStr := `{"name": "PlayStation 5", "brand": "Sony", "description": "The contender to the most popular game console"}`
 	json.NewDecoder(bytes.NewBuffer([]byte(productJsonStr))).Decode(&productJson)
 
@@ -74,10 +75,11 @@ func TestReadProduct(t *testing.T) {
 func TestModifyProduct(t *testing.T) {
 	router, db := configureBaseComponents(t)
 	defer db.Close()
-	newProductJsonStr := `{"name": "iPhone 12 Pro Max", "brand": "Apple", "description": "The 'previous' most popular smartphone"}`
 
 	var tempProduct *models.Product
 	var newProduct *models.Product
+
+	newProductJsonStr := `{"name": "iPhone 12 Pro Max", "brand": "Apple", "description": "The 'previous' most popular smartphone"}`
 	res := executeHttpRequest(t, router, http.MethodPut, "/products/1", newProductJsonStr)
 	json.NewDecoder(bytes.NewReader([]byte(newProductJsonStr))).Decode(&tempProduct)
 	json.NewDecoder(res.Body).Decode(&newProduct)
@@ -97,9 +99,9 @@ func TestModifyProduct(t *testing.T) {
 func TestDeleteProduct(t *testing.T) {
 	router, db := configureBaseComponents(t)
 	productDao := models.GetProductDao()
-	id := 1
 	defer db.Close()
 
+	id := 1
 	res := executeHttpRequest(t, router, http.MethodDelete, fmt.Sprintf("/products/%v", id), "")
 	_, err := productDao.GetById(id)
 	if res.Code != http.StatusOK || err == nil {
@@ -124,6 +126,7 @@ func configureBaseComponents(t *testing.T) (*gin.Engine, *sql.DB) {
 
 func executeHttpRequest(t *testing.T, router *gin.Engine, httpMethod string, url string, requestBody string) *httptest.ResponseRecorder {
 	t.Helper()
+
 	var req *http.Request
 
 	if requestBody != "" {
