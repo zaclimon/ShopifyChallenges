@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"net/http/httptest"
@@ -91,6 +92,19 @@ func TestModifyProduct(t *testing.T) {
 			t.Errorf("Expecting product duplicate, while error code is: %v instead", res.Code)
 		}
 	})
+}
+
+func TestDeleteProduct(t *testing.T) {
+	router, db := configureBaseComponents(t)
+	productDao := models.GetProductDao()
+	id := 1
+	defer db.Close()
+
+	res := executeHttpRequest(t, router, http.MethodDelete, fmt.Sprintf("/products/%v", id), "")
+	_, err := productDao.GetById(id)
+	if res.Code != http.StatusOK || err == nil {
+		t.Errorf("Product not deleted. Status code %v", res.Code)
+	}
 }
 
 func configureBaseComponents(t *testing.T) (*gin.Engine, *sql.DB) {

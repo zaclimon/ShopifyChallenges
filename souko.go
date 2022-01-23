@@ -15,6 +15,7 @@ func configureRouter() *gin.Engine {
 	r.POST("/products", createProductHandler)
 	r.GET("/products/:id", getProductHandler)
 	r.PUT("/products/:id", modifyProductHandler)
+	r.DELETE("/products/:id", deleteProductHandler)
 	return r
 }
 
@@ -82,6 +83,23 @@ func modifyProductHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, updatedProduct)
+}
+
+func deleteProductHandler(c *gin.Context) {
+	productDao := models.GetProductDao()
+	id, err := strconv.Atoi(c.Param("id"))
+	if validateError(c, http.StatusBadRequest, err) {
+		return
+	}
+
+	err = productDao.Delete(id)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+	} else if validateError(c, http.StatusInternalServerError, err) {
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "The product has been deleted"})
 }
 
 func validateError(c *gin.Context, statusCode int, err error) bool {
