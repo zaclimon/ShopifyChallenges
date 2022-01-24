@@ -63,11 +63,29 @@ func TestReadProduct(t *testing.T) {
 		err := json.NewDecoder(res.Body).Decode(&tempProduct)
 
 		if err != nil {
-			t.Errorf("Error while decoding JSON")
+			t.Errorf("Error while decoding JSON: %v", err.Error())
 		}
 
 		if tempProduct.Name != getTestProducts()[0].Name {
 			t.Errorf("Both products are not the same")
+		}
+	})
+
+	t.Run("Return all products at once", func(t *testing.T) {
+		var httpProducts []models.Product
+		res := executeHttpRequest(t, router, http.MethodGet, "/products", "")
+		err := json.NewDecoder(res.Body).Decode(&httpProducts)
+
+		if err != nil {
+			t.Errorf("Error while decoding JSON: %v", err.Error())
+		}
+
+		testProducts := getTestProducts()
+
+		if httpProducts[0].Name != testProducts[0].Name ||
+			httpProducts[1].Name != testProducts[1].Name ||
+			httpProducts[2].Name != testProducts[2].Name {
+			t.Errorf("Mismatch between the elements in the products array")
 		}
 	})
 }

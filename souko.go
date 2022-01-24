@@ -13,6 +13,7 @@ import (
 func configureRouter() *gin.Engine {
 	r := gin.Default()
 	r.POST("/products", createProductHandler)
+	r.GET("/products", getProductsHandler)
 	r.GET("/products/:id", getProductHandler)
 	r.PUT("/products/:id", modifyProductHandler)
 	r.DELETE("/products/:id", deleteProductHandler)
@@ -59,6 +60,17 @@ func getProductHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, product)
+}
+
+func getProductsHandler(c *gin.Context) {
+	productDao := models.GetProductDao()
+	products, err := productDao.GetAll()
+
+	if validateError(c, http.StatusInternalServerError, err) {
+		return
+	}
+
+	c.JSON(http.StatusOK, products)
 }
 
 func modifyProductHandler(c *gin.Context) {
