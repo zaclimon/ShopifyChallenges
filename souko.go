@@ -17,11 +17,15 @@ type MultiPageProductResponse struct {
 
 func configureRouter() *gin.Engine {
 	r := gin.Default()
-	r.POST("/products", createProductHandler)
-	r.GET("/products", getProductsHandler)
-	r.GET("/products/:id", getProductHandler)
-	r.PUT("/products/:id", modifyProductHandler)
-	r.DELETE("/products/:id", deleteProductHandler)
+	v1 := r.Group("/v1")
+	{
+		v1.POST("/products", createProductHandler)
+		v1.GET("/products", getProductsHandler)
+		v1.GET("/products/:id", getProductHandler)
+		v1.PUT("/products/:id", modifyProductHandler)
+		v1.DELETE("/products/:id", deleteProductHandler)
+	}
+
 	return r
 }
 

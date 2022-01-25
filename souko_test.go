@@ -12,6 +12,8 @@ import (
 	"testing"
 )
 
+const baseProductUrl = "/v1/products"
+
 func TestCreateProduct(t *testing.T) {
 	router, db := configureBaseComponents(t)
 	defer db.Close()
@@ -22,7 +24,7 @@ func TestCreateProduct(t *testing.T) {
 	json.NewDecoder(bytes.NewBuffer([]byte(productJsonStr))).Decode(&productJson)
 
 	t.Run("HTTP request", func(t *testing.T) {
-		res := executeHttpRequest(t, router, http.MethodPost, "/products", productJsonStr)
+		res := executeHttpRequest(t, router, http.MethodPost, baseProductUrl, productJsonStr)
 
 		if res.Code != http.StatusOK {
 			t.Errorf("Couldn't create product successfully")
@@ -46,7 +48,7 @@ func TestCreateProduct(t *testing.T) {
 	})
 
 	t.Run("Same product should not be created twice", func(t *testing.T) {
-		res := executeHttpRequest(t, router, http.MethodPost, "/products", productJsonStr)
+		res := executeHttpRequest(t, router, http.MethodPost, baseProductUrl, productJsonStr)
 		if res.Code != http.StatusConflict {
 			t.Errorf("Product conflict should have been detected, but code %v received instead", res.Code)
 		}
@@ -59,7 +61,7 @@ func TestReadProduct(t *testing.T) {
 
 	t.Run("Search by ID", func(t *testing.T) {
 		var tempProduct *models.Product
-		res := executeHttpRequest(t, router, http.MethodGet, "/products/1", "")
+		res := executeHttpRequest(t, router, http.MethodGet, fmt.Sprintf("%s/1", baseProductUrl), "")
 		err := json.NewDecoder(res.Body).Decode(&tempProduct)
 
 		if err != nil {
@@ -81,42 +83,42 @@ func TestReadProduct(t *testing.T) {
 		}{
 			{
 				"Return all products",
-				"/products",
+				baseProductUrl,
 				[]string{"Pixel 6 Pro", "iPhone 13 Pro Max", "Switch"},
 				-1,
 				http.StatusOK,
 			},
 			{
 				"Pagination - Limit to first product",
-				"/products?size=1",
+				fmt.Sprintf("%s?size=1", baseProductUrl),
 				[]string{"Pixel 6 Pro"},
 				2,
 				http.StatusOK,
 			},
 			{
 				"Pagination - Retrieve last two items",
-				"/products?token=2",
+				fmt.Sprintf("%s?token=2", baseProductUrl),
 				[]string{"iPhone 13 Pro Max", "Switch"},
 				-1,
 				http.StatusOK,
 			},
 			{
 				"Pagination - Limit to second product",
-				"/products?token=2&size=1",
+				fmt.Sprintf("%s?token=2&size=1", baseProductUrl),
 				[]string{"iPhone 13 Pro Max"},
 				3,
 				http.StatusOK,
 			},
 			{
 				"Pagination - Negative size",
-				"/products?size=-1",
+				fmt.Sprintf("%s?size=-1", baseProductUrl),
 				[]string{},
 				-1,
 				http.StatusBadRequest,
 			},
 			{
 				"Pagination - Negative token",
-				"/products?token=-1",
+				fmt.Sprintf("%s?token=-1", baseProductUrl),
 				[]string{},
 				-1,
 				http.StatusBadRequest,
@@ -161,7 +163,7 @@ func TestModifyProduct(t *testing.T) {
 	var newProduct *models.Product
 
 	newProductJsonStr := `{"name": "iPhone 12 Pro Max", "brand": "Apple", "description": "The 'previous' most popular smartphone"}`
-	res := executeHttpRequest(t, router, http.MethodPut, "/products/1", newProductJsonStr)
+	res := executeHttpRequest(t, router, http.MethodPut, fmt.Sprintf("%s/1", baseProductUrl), newProductJsonStr)
 	json.NewDecoder(bytes.NewReader([]byte(newProductJsonStr))).Decode(&tempProduct)
 	json.NewDecoder(res.Body).Decode(&newProduct)
 
@@ -170,7 +172,7 @@ func TestModifyProduct(t *testing.T) {
 	}
 
 	t.Run("Modify one product to the same name as another one", func(t *testing.T) {
-		res = executeHttpRequest(t, router, http.MethodPut, "/products/2", newProductJsonStr)
+		res = executeHttpRequest(t, router, http.MethodPut, fmt.Sprintf("%s/2", baseProductUrl), newProductJsonStr)
 		if res.Code != http.StatusConflict {
 			t.Errorf("Expecting product duplicate, while error code is: %v instead", res.Code)
 		}
@@ -183,7 +185,7 @@ func TestDeleteProduct(t *testing.T) {
 	defer db.Close()
 
 	id := 1
-	res := executeHttpRequest(t, router, http.MethodDelete, fmt.Sprintf("/products/%v", id), "")
+	res := executeHttpRequest(t, router, http.MethodDelete, fmt.Sprintf("%s/%d", baseProductUrl, id), "")
 	_, err := productDao.GetById(id)
 	if res.Code != http.StatusOK || err == nil {
 		t.Errorf("Product not deleted. Status code %v", res.Code)
