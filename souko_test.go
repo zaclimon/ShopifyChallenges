@@ -71,74 +71,60 @@ func TestReadProduct(t *testing.T) {
 		}
 	})
 
-	t.Run("Return all products at once", func(t *testing.T) {
-		var responseObj MultiPageProductResponse
-		res := executeHttpRequest(t, router, http.MethodGet, "/products", "")
-		err := json.NewDecoder(res.Body).Decode(&responseObj)
-
-		if err != nil {
-			t.Errorf("Error while decoding JSON: %v", err.Error())
+	t.Run("List of products", func(t *testing.T) {
+		var tests = []struct {
+			name                  string
+			url                   string
+			expectedProductNames  []string
+			expectedNextPageToken int
+		}{
+			{
+				"Return all products",
+				"/products",
+				[]string{"Pixel 6 Pro", "iPhone 13 Pro Max", "Switch"},
+				-1,
+			},
+			{
+				"Pagination - Limit to first product",
+				"/products?size=1",
+				[]string{"Pixel 6 Pro"},
+				2,
+			},
+			{
+				"Pagination - Retrieve last two items",
+				"/products?token=2",
+				[]string{"iPhone 13 Pro Max", "Switch"},
+				-1,
+			},
+			{
+				"Pagination - Limit to second product",
+				"/products?token=2&size=1",
+				[]string{"iPhone 13 Pro Max"},
+				3,
+			},
 		}
 
-		testProducts := getTestProducts()
+		for _, test := range tests {
+			t.Run(test.name, func(t *testing.T) {
+				var responseObj MultiPageProductResponse
+				res := executeHttpRequest(t, router, http.MethodGet, test.url, "")
+				err := json.NewDecoder(res.Body).Decode(&responseObj)
 
-		if responseObj.Products[0].Name != testProducts[0].Name ||
-			responseObj.Products[1].Name != testProducts[1].Name ||
-			responseObj.Products[2].Name != testProducts[2].Name {
-			t.Errorf("Mismatch between the elements in the products array")
-		}
-	})
+				if err != nil {
+					t.Errorf("Error while decoding JSON: %v", err.Error())
+				}
 
-	t.Run("Pagination: Limit to first product", func(t *testing.T) {
-		var responseObj MultiPageProductResponse
-		res := executeHttpRequest(t, router, http.MethodGet, "/products?size=1", "")
-		err := json.NewDecoder(res.Body).Decode(&responseObj)
+				for i, _ := range responseObj.Products {
+					if responseObj.Products[i].Name != test.expectedProductNames[i] {
+						t.Error("Mismatch between the elements in the response")
+					}
+				}
 
-		if err != nil {
-			t.Errorf("Error while decoding JSON: %v", err.Error())
-		}
-
-		if responseObj.NextPageId != 2 {
-			t.Errorf("Wrong next page id on pagination. Next page id: %v", responseObj.NextPageId)
-		}
-
-		if responseObj.Products[0].Name != getTestProducts()[0].Name {
-			t.Errorf("Products returned are not valid")
-		}
-	})
-
-	t.Run("Pagination: Retrieve last two items", func(t *testing.T) {
-		var responseObj MultiPageProductResponse
-		res := executeHttpRequest(t, router, http.MethodGet, "/products?token=2", "")
-		err := json.NewDecoder(res.Body).Decode(&responseObj)
-
-		if err != nil {
-			t.Errorf("Error while decoding JSON: %v", err.Error())
-		}
-
-		if responseObj.NextPageId != -1 {
-			t.Errorf("Could return next page when we reached the end of list. Next page id: %v", responseObj.NextPageId)
-		}
-
-		testProducts := getTestProducts()
-
-		if responseObj.Products[0].Name != testProducts[1].Name ||
-			responseObj.Products[1].Name != testProducts[2].Name {
-			t.Errorf("Products returned are not valid")
-		}
-	})
-
-	t.Run("Pagination: Limit to second product", func(t *testing.T) {
-		var responseObj MultiPageProductResponse
-		res := executeHttpRequest(t, router, http.MethodGet, "/products?token=2&size=1", "")
-		err := json.NewDecoder(res.Body).Decode(&responseObj)
-
-		if err != nil {
-			t.Errorf("Error while decoding JSON: %v", err.Error())
-		}
-
-		if responseObj.Products[0].Name != getTestProducts()[1].Name {
-			t.Errorf("Products returned are not valid")
+				if responseObj.NextPageToken != test.expectedNextPageToken {
+					t.Errorf("Wrong next page token on pagination. got: %v, expected: %v",
+						responseObj.NextPageToken, test.expectedNextPageToken)
+				}
+			})
 		}
 	})
 }

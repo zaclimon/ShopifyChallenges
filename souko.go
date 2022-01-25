@@ -11,8 +11,8 @@ import (
 )
 
 type MultiPageProductResponse struct {
-	Products   []models.Product `json:"products"`
-	NextPageId int              `json:"nextPageId"`
+	Products      []models.Product `json:"products"`
+	NextPageToken int              `json:"nextPageToken"`
 }
 
 func configureRouter() *gin.Engine {
