@@ -77,30 +77,49 @@ func TestReadProduct(t *testing.T) {
 			url                   string
 			expectedProductNames  []string
 			expectedNextPageToken int
+			expectedStatusCode    int
 		}{
 			{
 				"Return all products",
 				"/products",
 				[]string{"Pixel 6 Pro", "iPhone 13 Pro Max", "Switch"},
 				-1,
+				http.StatusOK,
 			},
 			{
 				"Pagination - Limit to first product",
 				"/products?size=1",
 				[]string{"Pixel 6 Pro"},
 				2,
+				http.StatusOK,
 			},
 			{
 				"Pagination - Retrieve last two items",
 				"/products?token=2",
 				[]string{"iPhone 13 Pro Max", "Switch"},
 				-1,
+				http.StatusOK,
 			},
 			{
 				"Pagination - Limit to second product",
 				"/products?token=2&size=1",
 				[]string{"iPhone 13 Pro Max"},
 				3,
+				http.StatusOK,
+			},
+			{
+				"Pagination - Negative size",
+				"/products?size=-1",
+				[]string{},
+				-1,
+				http.StatusBadRequest,
+			},
+			{
+				"Pagination - Negative token",
+				"/products?token=-1",
+				[]string{},
+				-1,
+				http.StatusBadRequest,
 			},
 		}
 
@@ -108,6 +127,11 @@ func TestReadProduct(t *testing.T) {
 			t.Run(test.name, func(t *testing.T) {
 				var responseObj MultiPageProductResponse
 				res := executeHttpRequest(t, router, http.MethodGet, test.url, "")
+
+				if res.Code != http.StatusOK && res.Code == test.expectedStatusCode {
+					return
+				}
+
 				err := json.NewDecoder(res.Body).Decode(&responseObj)
 
 				if err != nil {

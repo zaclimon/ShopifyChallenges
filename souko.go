@@ -81,6 +81,11 @@ func getProductsHandler(c *gin.Context) {
 		return
 	}
 
+	if token < 0 || size < 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "An invalid value for size or token has been set"})
+		return
+	}
+
 	products, nextPageId, err := productDao.GetPage(token, size)
 
 	if validateError(c, http.StatusInternalServerError, err) {
