@@ -17,7 +17,7 @@ type ProductDao interface {
 	Insert(product *Product) error
 	GetById(id int) (*Product, error)
 	GetByName(name string) (*Product, error)
-	GetAll() ([]Product, error)
+	GetPage(token int, size int) ([]Product, int, error)
 	Update(id int, newProduct *Product) (*Product, error)
 	Delete(id int) error
 }
@@ -52,14 +52,26 @@ func (pd *productDaoImpl) GetByName(name string) (*Product, error) {
 	return &product, nil
 }
 
-func (pd *productDaoImpl) GetAll() ([]Product, error) {
+// Inspired from: https://cloud.google.com/apis/design/design_patterns#list_pagination
+func (pd *productDaoImpl) GetPage(token int, size int) ([]Product, int, error) {
 	var products []Product
-	result := pd.dbObj.Find(&products)
+	var productCount int64
+	var nextTokenId int
+	result := pd.dbObj.Order("id").Where("id >= ?", token).Limit(size).Find(&products)
+	pd.dbObj.Model(&Product{}).Count(&productCount)
 
 	if result.Error != nil {
-		return nil, result.Error
+		return nil, -1, result.Error
 	}
-	return products, nil
+
+	// We assume that the token will always be positive since it's auto-incrementing
+	if int64(token+size) > productCount {
+		nextTokenId = -1
+	} else {
+		nextTokenId = token + size
+	}
+
+	return products, nextTokenId, nil
 }
 
 func (pd *productDaoImpl) Update(id int, newProduct *Product) (*Product, error) {

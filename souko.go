@@ -10,6 +10,11 @@ import (
 	"strconv"
 )
 
+type MultiPageProductResponse struct {
+	Products   []models.Product `json:"products"`
+	NextPageId int              `json:"nextPageId"`
+}
+
 func configureRouter() *gin.Engine {
 	r := gin.Default()
 	r.POST("/products", createProductHandler)
@@ -64,13 +69,25 @@ func getProductHandler(c *gin.Context) {
 
 func getProductsHandler(c *gin.Context) {
 	productDao := models.GetProductDao()
-	products, err := productDao.GetAll()
+	token, err := strconv.Atoi(c.DefaultQuery("token", "1"))
+
+	if validateError(c, http.StatusBadRequest, err) {
+		return
+	}
+
+	size, err := strconv.Atoi(c.DefaultQuery("size", "5"))
+
+	if validateError(c, http.StatusBadRequest, err) {
+		return
+	}
+
+	products, nextPageId, err := productDao.GetPage(token, size)
 
 	if validateError(c, http.StatusInternalServerError, err) {
 		return
 	}
 
-	c.JSON(http.StatusOK, products)
+	c.JSON(http.StatusOK, MultiPageProductResponse{products, nextPageId})
 }
 
 func modifyProductHandler(c *gin.Context) {

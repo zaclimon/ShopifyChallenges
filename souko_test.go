@@ -72,9 +72,9 @@ func TestReadProduct(t *testing.T) {
 	})
 
 	t.Run("Return all products at once", func(t *testing.T) {
-		var httpProducts []models.Product
+		var responseObj MultiPageProductResponse
 		res := executeHttpRequest(t, router, http.MethodGet, "/products", "")
-		err := json.NewDecoder(res.Body).Decode(&httpProducts)
+		err := json.NewDecoder(res.Body).Decode(&responseObj)
 
 		if err != nil {
 			t.Errorf("Error while decoding JSON: %v", err.Error())
@@ -82,10 +82,63 @@ func TestReadProduct(t *testing.T) {
 
 		testProducts := getTestProducts()
 
-		if httpProducts[0].Name != testProducts[0].Name ||
-			httpProducts[1].Name != testProducts[1].Name ||
-			httpProducts[2].Name != testProducts[2].Name {
+		if responseObj.Products[0].Name != testProducts[0].Name ||
+			responseObj.Products[1].Name != testProducts[1].Name ||
+			responseObj.Products[2].Name != testProducts[2].Name {
 			t.Errorf("Mismatch between the elements in the products array")
+		}
+	})
+
+	t.Run("Pagination: Limit to first product", func(t *testing.T) {
+		var responseObj MultiPageProductResponse
+		res := executeHttpRequest(t, router, http.MethodGet, "/products?size=1", "")
+		err := json.NewDecoder(res.Body).Decode(&responseObj)
+
+		if err != nil {
+			t.Errorf("Error while decoding JSON: %v", err.Error())
+		}
+
+		if responseObj.NextPageId != 2 {
+			t.Errorf("Wrong next page id on pagination. Next page id: %v", responseObj.NextPageId)
+		}
+
+		if responseObj.Products[0].Name != getTestProducts()[0].Name {
+			t.Errorf("Products returned are not valid")
+		}
+	})
+
+	t.Run("Pagination: Retrieve last two items", func(t *testing.T) {
+		var responseObj MultiPageProductResponse
+		res := executeHttpRequest(t, router, http.MethodGet, "/products?token=2", "")
+		err := json.NewDecoder(res.Body).Decode(&responseObj)
+
+		if err != nil {
+			t.Errorf("Error while decoding JSON: %v", err.Error())
+		}
+
+		if responseObj.NextPageId != -1 {
+			t.Errorf("Could return next page when we reached the end of list. Next page id: %v", responseObj.NextPageId)
+		}
+
+		testProducts := getTestProducts()
+
+		if responseObj.Products[0].Name != testProducts[1].Name ||
+			responseObj.Products[1].Name != testProducts[2].Name {
+			t.Errorf("Products returned are not valid")
+		}
+	})
+
+	t.Run("Pagination: Limit to second product", func(t *testing.T) {
+		var responseObj MultiPageProductResponse
+		res := executeHttpRequest(t, router, http.MethodGet, "/products?token=2&size=1", "")
+		err := json.NewDecoder(res.Body).Decode(&responseObj)
+
+		if err != nil {
+			t.Errorf("Error while decoding JSON: %v", err.Error())
+		}
+
+		if responseObj.Products[0].Name != getTestProducts()[1].Name {
+			t.Errorf("Products returned are not valid")
 		}
 	})
 }
